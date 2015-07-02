@@ -1,35 +1,30 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.altervista.prezisland.geometry;
 
 import java.awt.geom.Point2D;
 
 /**
- * Vector starting from the origin.
+ * Cartesian vector starting from the origin.
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
-public class Vector {
+public class CartesianVector {
 
     private double vx, vy;
     private double length = -1;
-    public static final Vector X_AXIS = new Vector(1, 0);
-    public static final Vector Y_AXIS = new Vector(0, 1);
+    public static final CartesianVector X_AXIS = new CartesianVector(1, 0);
+    public static final CartesianVector Y_AXIS = new CartesianVector(0, 1);
 
-    public Vector(Point2D p1, Point2D p2) {
+    public CartesianVector(Point2D p1, Point2D p2) {
         vx = getVectorX(p1, p2);
         vy = getVectorY(p1, p2);
     }
 
-    public Vector(double x1, double y1, double x2, double y2) {
+    public CartesianVector(double x1, double y1, double x2, double y2) {
         vx = x2 - x1;
         vy = -(y2 - y1);
     }
 
-    public Vector(double vx, double vy) {
+    public CartesianVector(double vx, double vy) {
         this.vx = vx;
         this.vy = vy;
     }
@@ -56,25 +51,25 @@ public class Vector {
      * @return The direction vector for this Vector, i.e. a Vector with the same
      * direction and heading, but with unitary length.
      */
-    public Vector getDirectionVector() {
+    public CartesianVector getDirectionVector() {
         double len = getLength();
-        return new Vector(vx / getLength(), vy / getLength());
+        return new CartesianVector(vx / getLength(), vy / getLength());
     }
 
     /**
      * @return The left-hand normal vector for this Vector, i.e. a Vector with
      * direction perpendicular to that of the current one, facing "left".
      */
-    public Vector getLefthandNormal() {
-        return new Vector(-vy, vy);
+    public CartesianVector getLefthandNormal() {
+        return new CartesianVector(-vy, vy);
     }
 
     /**
      * @return The right-hand normal vector for this Vector, i.e. a Vector with
      * direction perpendicular to that of the current one, facing "right".
      */
-    public Vector getRighthandNormal() {
-        return new Vector(vx, -vx);
+    public CartesianVector getRighthandNormal() {
+        return new CartesianVector(vx, -vx);
     }
 
     /**
@@ -85,7 +80,7 @@ public class Vector {
      * @param v The vector acting as second operand of the dot product.
      * @return The dot product of this Vector and Vector v.
      */
-    public double getDotProduct(Vector v) {
+    public double getDotProduct(CartesianVector v) {
         //FIXME  System.out.println(""+this.vx+"*"+ v.vx +" + "+ this.vy +"*"+ v.vy);
         return (this.vx * v.vx + this.vy * v.vy);
     }
@@ -97,15 +92,15 @@ public class Vector {
      * @param axis The <u>unit</u> Vector defining the projection axis.
      * @return The projected Vector.
      */
-    public Vector projectOnto(Vector axis) {
+    public CartesianVector projectOnto(CartesianVector axis) {
         double dotpr = getDotProduct(axis);
         //FIXME  System.out.println("DotPr: " + dotpr);
         if (axis.isUnit()) {
             //System.out.println(vx+" "+vy+" "+dotpr);
-            return new Vector(axis.vx * dotpr, axis.vy * dotpr);
+            return new CartesianVector(axis.vx * dotpr, axis.vy * dotpr);
         } else {
             //FIXME  System.out.println("" + dotpr / axis.getDotProduct(axis) * axis.vx + "," + dotpr / axis.getDotProduct(axis) * axis.vy);
-            return new Vector(dotpr / axis.getDotProduct(axis) * axis.vx, dotpr / axis.getDotProduct(axis) * axis.vy);
+            return new CartesianVector(dotpr / axis.getDotProduct(axis) * axis.vx, dotpr / axis.getDotProduct(axis) * axis.vy);
         }
     }
 
@@ -117,23 +112,23 @@ public class Vector {
     /**
      * @return The unit-length version of this vector;
      */
-    public Vector makeUnit() {
+    public CartesianVector makeUnit() {
         double len = getLength();
-        return new Vector(vx / len, vy / len);
+        return new CartesianVector(vx / len, vy / len);
     }
     
     public void invertVy(){
         vy = -vy;
     }
 
-    public Vector scalarProduct(double d){
-        return new Vector(vx*d,vy*d);
+    public CartesianVector scalarProduct(double d){
+        return new CartesianVector(vx*d,vy*d);
     }
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Vector) {
-            Vector v = (Vector) o;
+        if (o instanceof CartesianVector) {
+            CartesianVector v = (CartesianVector) o;
             return vx == v.vx && vy == v.vy;
         }
         return false;

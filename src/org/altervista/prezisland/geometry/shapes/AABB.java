@@ -24,18 +24,18 @@
 package org.altervista.prezisland.geometry.shapes;
 
 import java.awt.geom.Point2D;
-import org.altervista.prezisland.geometry.Vector;
+import org.altervista.prezisland.geometry.CartesianVector;
 
 /**
  * Axis Aligned Bounding Box
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
-public class AABB extends Shape {
+public class AABB extends Polygon {
 
     private final double width, height, halfWidth, halfHeight;
-    private final static Vector[] aabbAxes = {new Vector(1, 0),
-        new Vector(0, 1)};
+    private final static CartesianVector[] aabbAxes = {new CartesianVector(1, 0),
+        new CartesianVector(0, 1)};
 
     /**
      *
@@ -75,7 +75,7 @@ public class AABB extends Shape {
     }
 
     @Override
-    public Vector[] getSeparatingAxes() {
+    public CartesianVector[] getSeparatingAxes() {
         return separatingAxes;
     }
 

@@ -23,7 +23,7 @@
  */
 package org.altervista.prezisland.geometry;
 
-import org.altervista.prezisland.geometry.shapes.Shape;
+import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -40,7 +40,7 @@ import java.util.List;
 public class GeomGUI extends javax.swing.JFrame {
 
     private static final int POINT_HALFWIDTH = 2;
-    private final LinkedList<Shape> shapes;
+    private final LinkedList<Polygon> shapes;
 
     /**
      * Creates new form GeomGUI
@@ -59,12 +59,12 @@ public class GeomGUI extends javax.swing.JFrame {
         g.clearRect(0, 0, this.getWidth(), getHeight());
         this.paintComponents(g);
         drawGrid(drawPanel.getGraphics());
-        for (Shape s : shapes) {
+        for (Polygon s : shapes) {
             drawShape(s, drawPanel.getGraphics());
         }
         for (int i = 0; i < shapes.size() - 1; i++) {
             g.setColor(Color.red);
-            Vector pv = getPenetrationVector(shapes.get(i), shapes.get(i + 1));
+            CartesianVector pv = getPenetrationVector(shapes.get(i), shapes.get(i + 1));
             System.out.println(pv);
             drawVector(drawPanel.getGraphics(), (int) shapes.get(i).getPoints().get(0).x,
                     (int) shapes.get(i).getPoints().get(0).y,
@@ -73,23 +73,23 @@ public class GeomGUI extends javax.swing.JFrame {
         }
     }
 
-    public void addShape(Shape s) {
+    public void addShape(Polygon s) {
         shapes.add(s);
     }
 
-    private Vector getPenetrationVector(Shape s1, Shape s2) {
+    private CartesianVector getPenetrationVector(Polygon s1, Polygon s2) {
         Graphics g = drawPanel.getGraphics();
         g.setColor(Color.GREEN);
-        LinkedList<Vector> sepAxes = new LinkedList<>();
+        LinkedList<CartesianVector> sepAxes = new LinkedList<>();
         //<editor-fold desc="Collect all potentially separating axes">
         //Heuristic: eliminate duplicates of X and Y axis straight away
         int nx = 0, ny = 0;
-        for (Vector v : s1.getSeparatingAxes()) {
-            if (v.equals(Vector.X_AXIS)) {
+        for (CartesianVector v : s1.getSeparatingAxes()) {
+            if (v.equals(CartesianVector.X_AXIS)) {
                 if (++nx > 1) {
                     sepAxes.add(v);
                 }
-            } else if (v.equals(Vector.Y_AXIS)) {
+            } else if (v.equals(CartesianVector.Y_AXIS)) {
                 if (++ny > 1) {
                     sepAxes.add(v);
                 }
@@ -97,12 +97,12 @@ public class GeomGUI extends javax.swing.JFrame {
                 sepAxes.add(v);
             }
         }
-        for (Vector v : s2.getSeparatingAxes()) {
-            if (v.equals(Vector.X_AXIS)) {
+        for (CartesianVector v : s2.getSeparatingAxes()) {
+            if (v.equals(CartesianVector.X_AXIS)) {
                 if (++nx > 1) {
                     sepAxes.add(v);
                 }
-            } else if (v.equals(Vector.Y_AXIS)) {
+            } else if (v.equals(CartesianVector.Y_AXIS)) {
                 if (++ny > 1) {
                     sepAxes.add(v);
                 }
@@ -112,14 +112,15 @@ public class GeomGUI extends javax.swing.JFrame {
         }
         //</editor-fold>
         // Project the shapes onto the axes
-        LinkedList<Vector> penVectors = new LinkedList<>();
-        for (Vector axis : sepAxes) {
+        LinkedList<CartesianVector> penVectors = new LinkedList<>();
+        for (CartesianVector axis : sepAxes) {
             double len1 = 0, len2 = 0, dist = -1;
-            ArrayList<Vector> edges1 = new ArrayList<>(Arrays.asList(s1.getEdges())),
+            ArrayList<CartesianVector> edges1 = new ArrayList<>(Arrays.asList(s1.getEdges())),
                     edges2 = new ArrayList<>(Arrays.asList(s2.getEdges()));
             for (int i = 0; i < edges1.size(); i++) {
                 for (int j = 0; j < edges1.size() && j != i; j++) {
-                    Vector e1 = edges1.get(i), e2 = edges1.get(j);
+                    CartesianVector e1 = edges1.get(i);
+                    CartesianVector e2 = edges1.get(j);
                     if (Math.abs(e1.getDotProduct(e2.makeUnit())) == e1.getLength()) {
                         edges1.remove(i);
                         i--;
@@ -129,7 +130,8 @@ public class GeomGUI extends javax.swing.JFrame {
             }
             for (int i = 0; i < edges2.size(); i++) {
                 for (int j = 0; j < edges2.size() && j != i; j++) {
-                    Vector e1 = edges2.get(i), e2 = edges2.get(j);
+                    CartesianVector e1 = edges2.get(i);
+                    CartesianVector e2 = edges2.get(j);
                     if (Math.abs(e1.getDotProduct(e2.makeUnit())) == e1.getLength()) {
                         edges2.remove(i);
                         i--;
@@ -137,25 +139,25 @@ public class GeomGUI extends javax.swing.JFrame {
                     }
                 }
             }
-            for (Vector e : edges1) {
+            for (CartesianVector e : edges1) {
                 len1 += e.projectOnto(axis).getLength();
                 //System.out.println("1. projecting " + e + " onto " + axis + " :" + e.projectOnto(axis));
             }
-            for (Vector e : edges2) {
+            for (CartesianVector e : edges2) {
                 len2 += e.projectOnto(axis).getLength();
                 //System.out.println("2. projecting " + e + " onto " + axis + " :" + e.projectOnto(axis));
             }
-            dist = new Vector(s1.getCenter(), s2.getCenter()).getDotProduct(axis);
+            dist = new CartesianVector(s1.getCenter(), s2.getCenter()).getDotProduct(axis);
             double penLen = (Math.abs(len1) + Math.abs(len2) - Math.abs(dist) * 2) / 2;
             //System.out.println("axis" + axis + " len1: " + len1 + " len2: " + len2 + " dist: " + dist + " penLen: " + penLen); //FIXME
             if (penLen <= 0) {
-                return new Vector(0, 0);
+                return new CartesianVector(0, 0);
             }
             penVectors.add(getPenDirection(s1, s2, axis).scalarProduct(penLen));
         }
         // get minimum penetration vector
         if (penVectors.isEmpty()) {
-            return new Vector(0, 0);
+            return new CartesianVector(0, 0);
         } else {
             int index = 0;
             for (int i = 1; i < penVectors.size(); i++) {
@@ -167,16 +169,16 @@ public class GeomGUI extends javax.swing.JFrame {
         }
     }
 
-    private Vector getPenDirection(Shape s1, Shape s2, Vector axis) {
+    private CartesianVector getPenDirection(Polygon s1, Polygon s2, CartesianVector axis) {
         if (!s1.getCenter().equals(s2.getCenter())) {
-            Vector v = new Vector(s1.getCenter(), s2.getCenter()).projectOnto(axis)
+            CartesianVector v = new CartesianVector(s1.getCenter(), s2.getCenter()).projectOnto(axis)
                     .makeUnit();
-            return new Vector(-v.getVx(), -v.getVy());
+            return new CartesianVector(-v.getVx(), -v.getVy());
         }
-        return new Vector(0,0);
+        return new CartesianVector(0,0);
     }
 
-    private void drawShape(Shape s, Graphics g) {
+    private void drawShape(Polygon s, Graphics g) {
         List<Point2D.Double> pts = s.getPoints();
         if (pts.size() > 1) {
             for (int i = 0; i < pts.size(); i++) {

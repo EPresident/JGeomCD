@@ -28,37 +28,37 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.altervista.prezisland.geometry.Vector;
+import org.altervista.prezisland.geometry.CartesianVector;
 
 /**
- * Shape represented by an array of points, which are linked by edges in a
- * counter-clockwise order; this means that edges are implicit.
+ * Polygon represented by an array of points, which are linked by edges in a
+ * counter-clockwise order; edges are not explicitly stored.
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
-public class Shape {
+public class Polygon {
 
     protected final ArrayList<Point2D.Double> points;
     protected final Point2D.Double center;
-    protected Vector[] separatingAxes;
+    protected CartesianVector[] separatingAxes;
 
-    public Shape(Point2D.Double[] pts) {
+    public Polygon(Point2D.Double[] pts) {
         points = new ArrayList<>();
         points.addAll(Arrays.asList(pts));
         center = calculateCenter();
     }
 
-    public Shape(Collection<Point2D.Double> pts) {
+    public Polygon(Collection<Point2D.Double> pts) {
         points = new ArrayList<>(pts);
         center = calculateCenter();
     }
     
-    protected Shape(Collection<Point2D.Double> pts, Point2D.Double ctr){
+    protected Polygon(Collection<Point2D.Double> pts, Point2D.Double ctr){
         points = new ArrayList<>(pts);
         center = ctr;
     }
     
-    protected Shape(Point2D.Double[] pts, Point2D.Double ctr){
+    protected Polygon(Point2D.Double[] pts, Point2D.Double ctr){
         points = new ArrayList<>(Arrays.asList(pts));
         center = ctr;
       /*  System.out.print("new shape : ");
@@ -116,19 +116,19 @@ public class Shape {
      * @return An Array of separating (unit) axes for this shape, i.e. the axes
      * perpendicular to each edge.
      */
-    public Vector[] getSeparatingAxes() {
+    public CartesianVector[] getSeparatingAxes() {
         if (separatingAxes == null) {
-            separatingAxes = new Vector[points.size() - 1];
+            separatingAxes = new CartesianVector[points.size() - 1];
             // Get direction vector for each edge
             for (int i = 0; i < points.size() - 1; i++) {
                 Point2D p1 = points.get(i), p2 = points.get(i + 1);
-                separatingAxes[i] = new Vector(p1, p2).getRighthandNormal().makeUnit();
+                separatingAxes[i] = new CartesianVector(p1, p2).getRighthandNormal().makeUnit();
             }
         }
         return separatingAxes;
     }
 
-    public double getDistance(Shape s){
+    public double getDistance(Polygon s){
         return this.center.distance(s.center);
     }
     
@@ -160,10 +160,10 @@ public class Shape {
         throw new UnsupportedOperationException("NYI");
     }
     
-    public Vector[] getEdges(){
-        Vector[] edges = new Vector[points.size()-1];
+    public CartesianVector[] getEdges(){
+        CartesianVector[] edges = new CartesianVector[points.size()-1];
         for (int i = 0; i < edges.length; i++) {
-            edges[i]=new Vector(points.get(i).x, points.get(i).y,
+            edges[i]=new CartesianVector(points.get(i).x, points.get(i).y,
                     points.get(i+1).x, points.get(i+1).y);
         }
         return edges;

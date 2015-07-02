@@ -23,7 +23,7 @@
  */
 package org.altervista.prezisland.geometry;
 
-import org.altervista.prezisland.geometry.shapes.Shape;
+import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +36,7 @@ import org.altervista.prezisland.geometry.shapes.AABB;
 public final class Geometry {
 
     private final GeomGUI gui;
-    private static final Shape RECTANGLE1 = new AABB(200, 200, 200, 100),
+    private static final Polygon RECTANGLE1 = new AABB(200, 200, 200, 100),
             RECTANGLE2 = new AABB(400, 220, 100, 200),
             RECTANGLE3 = new AABB(300, 220, 100, 200),
             RECTANGLE4 = new AABB(300, 60, 100, 200),
@@ -46,8 +46,8 @@ public final class Geometry {
     private Geometry() {
         gui = new GeomGUI();
         gui.setVisible(true);
-        gui.addShape(RECTANGLE1);
-        gui.addShape(RECTANGLE6);
+        /*gui.addShape(RECTANGLE1);
+        gui.addShape(RECTANGLE6);*/
     }
 
     public static void main(String[] args) {
