@@ -48,51 +48,77 @@ public class MinkowskiSum {
     private Polygon minkowskiSumConvex_private(Polygon s1, Polygon s2) {
         ArrayList<Point2D.Double> pts1 = new ArrayList(s1.getPoints()),
                 pts2 = new ArrayList(s2.getPoints());
-        
+
         /* 
-            Build Edge arrays:
-            We need to calculate the angle ( relative to the x axis ) for each
-            edge.
-        */
-        Edge[] E = new Edge[pts1.size()+pts2.size()-2];
-        for (int i = 0; i < pts1.size()-1; i++) {
-            E[i]=new Edge(pts1.get(i), pts1.get(i+1));
+         Build Edge arrays:
+         We need to calculate the angle ( relative to the x axis ) for each
+         edge.
+         */
+        Edge[] E = new Edge[pts1.size() + pts2.size()];
+        for (int i = 0; i < pts1.size(); i++) {
+            E[i] = new Edge(pts1.get(i), pts1.get((i + 1) % pts1.size()));
         }
-        for (int i = pts1.size(); i < (pts1.size()+pts2.size()-2); i++) {
-            E[i]=new Edge(pts2.get(i), pts2.get(i+1));
+        for (int i = 0; i < pts2.size(); i++) {
+            E[pts1.size() + i] = new Edge(pts2.get(i), pts2.get((i + 1) % pts2.size()));
         }
         Sorting.mergeSort(E);
+        for (Edge e : E) {
+            System.out.print(e.angle + ",");
+        }
+        System.out.println("");
         LinkedList<Point2D.Double> pts = new LinkedList<>();
-        for(Edge e : E){
+        for (Edge e : E) {
+            System.out.print(e + ",");
             pts.add(e.a);
             pts.add(e.b);
         }
+        System.out.println("\n");
         return new Polygon(pts);
     }
+
+    public static Polygon bruteMinkowskiSumConvex(Polygon s1, Polygon s2) {
+        //return INSTANCE.bruteMinkowskiSumConvex_private(s1, s2);
+        ArrayList<Point2D.Double> pts1 = new ArrayList<>(s1.getPoints()),
+                pts2 = new ArrayList<>(s2.getPoints()), ptsn=new ArrayList<>();
+        for (Point2D.Double p1 : pts1) {
+            for (Point2D.Double p2 : pts2) {
+                ptsn.add(new Point2D.Double(p1.x+p2.x, p1.y+p2.y));
+            }
+        }
+        return new Polygon(ptsn);
+    }
+
 
     /**
      * Utility class that represents a Polygon's edge, and stores its angle
      * relative to the x axis.
      */
-    private class Edge implements Comparable<Edge>{
-        Point2D.Double a,b;
+    private class Edge implements Comparable<Edge> {
+
+        Point2D.Double a, b;
         double angle;
-        
-        Edge(Point2D.Double u, Point2D.Double v){
-            a=u;
-            b=v;
+
+        Edge(Point2D.Double u, Point2D.Double v) {
+            a = u;
+            b = v;
             angle = Math.atan2(b.y - a.y, b.x - a.x);
         }
 
         @Override
         public int compareTo(Edge o) {
-            if(angle > o.angle){
+            if (angle > o.angle) {
                 return 1;
             }
-            if(angle < o.angle){
+            if (angle < o.angle) {
                 return -1;
             }
             return 0;
+        }
+
+        @Override
+        public String toString() {
+            // return "("+angle+")";
+            return "(" + a.x + "," + a.y + "->" + b.x + "," + b.y + "--" + angle + ")";
         }
     }
 

@@ -44,18 +44,16 @@ public class Sorting {
     }
 
     public static void merge(Comparable[] V, int p, int q, int r) {
-        Comparable[] T = new Comparable[q - p + 2];
-        for (int c = 0; c < T.length - 1; c++) {
+        Comparable[] T = new Comparable[q - p + 1];
+        for (int c = 0; c < T.length; c++) {
             T[c] = V[p + c];
         }
-        Comparable[] U = new Comparable[r - q + 1];
-        for (int c = 0; c < U.length - 1; c++) {
+        Comparable[] U = new Comparable[r - q];
+        for (int c = 0; c < U.length; c++) {
             U[c] = V[q + 1 + c];
         }
-        T[T.length - 1] = 999999;
-        U[U.length - 1] = 999999;
-        int i = 0, j = 0;
-        for (int k = p; k <= r; k++) {
+        int i = 0, j = 0, k = p;
+        while (k <= r && i < T.length && j < U.length) {
             if (T[i].compareTo(U[j]) <= 0) {
                 V[k] = T[i];
                 i++;
@@ -63,6 +61,17 @@ public class Sorting {
                 V[k] = U[j];
                 j++;
             }
+            k++;
+        }
+        while(i < T.length){
+            V[k] = T[i];
+            i++;
+            k++;
+        }
+        while(j < U.length){
+            V[k] = U[j];
+            j++;
+            k++;
         }
     }
 }

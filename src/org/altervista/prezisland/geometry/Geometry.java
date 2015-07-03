@@ -27,6 +27,7 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
+import org.altervista.prezisland.geometry.algorithms.MinkowskiSum;
 import org.altervista.prezisland.geometry.shapes.AABB;
 
 /**
@@ -41,13 +42,26 @@ public final class Geometry {
             RECTANGLE3 = new AABB(300, 220, 100, 200),
             RECTANGLE4 = new AABB(300, 60, 100, 200),
             RECTANGLE5 = new AABB(300, 320, 100, 200),
-            RECTANGLE6 = new AABB(100, 220, 100, 200);
+            RECTANGLE6 = new AABB(100, 220, 100, 200),
+            TRIANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(300, 100),
+                new Point2D.Double(100, 200), new Point2D.Double(250, 300)}),
+            TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 100),
+                new Point2D.Double(100, 300), new Point2D.Double(200, 200)}),
+            TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(200, 100),
+                new Point2D.Double(100, 200), new Point2D.Double(200, 300)});
 
     private Geometry() {
         gui = new GeomGUI();
         gui.setVisible(true);
         /*gui.addShape(RECTANGLE1);
-        gui.addShape(RECTANGLE6);*/
+         gui.addShape(RECTANGLE6);*/
+        // Convolution test
+        //     gui.addShape(RECTANGLE1);
+        //gui.addShape(TRIANGLE1);
+        // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
+        //gui.addShape(TRIANGLE2);
+        //gui.addShape(TRIANGLE3);
+        gui.addShape(MinkowskiSum.bruteMinkowskiSumConvex(TRIANGLE2, TRIANGLE3));
     }
 
     public static void main(String[] args) {
@@ -120,26 +134,25 @@ public final class Geometry {
         }
     }
 
-    
-    public static void sortLexicographicallyX(List<Point2D.Double>pts) {
+    public static void sortLexicographicallyX(List<Point2D.Double> pts) {
         // Bubble sort
         for (int i = 0; i < pts.size() - 1; i++) {
-            if (compareLexicographicallyX(pts.get(i), pts.get(i+1)) > 0) {
-                Point2D.Double temp = pts.get(i+1);
-                pts.set(i+1, pts.get(i));
-                pts.set(i,temp);
+            if (compareLexicographicallyX(pts.get(i), pts.get(i + 1)) > 0) {
+                Point2D.Double temp = pts.get(i + 1);
+                pts.set(i + 1, pts.get(i));
+                pts.set(i, temp);
                 int j = i - 1;
-                while (j >= 0 && (compareLexicographicallyX(pts.get(j), pts.get(j+1)) > 0)) {
-                    temp = pts.get(j+1);
-                    pts.set(j+1, pts.get(j));
-                    pts.set(j,temp);
+                while (j >= 0 && (compareLexicographicallyX(pts.get(j), pts.get(j + 1)) > 0)) {
+                    temp = pts.get(j + 1);
+                    pts.set(j + 1, pts.get(j));
+                    pts.set(j, temp);
                     j--;
                 }
             }
             //System.out.println(pts.toString());
         }
     }
-    
+
     public static boolean isLeftTurn(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3) {
         return (getAngle(p2, p3) - getAngle(p1, p2)) > 0;
     }

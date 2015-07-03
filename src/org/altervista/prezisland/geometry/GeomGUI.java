@@ -62,6 +62,8 @@ public class GeomGUI extends javax.swing.JFrame {
         for (Polygon s : shapes) {
             drawShape(s, drawPanel.getGraphics());
         }
+        /* 
+        // Draw Penetration vectors
         for (int i = 0; i < shapes.size() - 1; i++) {
             g.setColor(Color.red);
             CartesianVector pv = getPenetrationVector(shapes.get(i), shapes.get(i + 1));
@@ -70,7 +72,7 @@ public class GeomGUI extends javax.swing.JFrame {
                     (int) shapes.get(i).getPoints().get(0).y,
                     (int) (shapes.get(i).getPoints().get(0).x + pv.getVx()),
                     (int) (shapes.get(i).getPoints().get(0).y + pv.getVy()));
-        }
+        }*/
     }
 
     public void addShape(Polygon s) {
