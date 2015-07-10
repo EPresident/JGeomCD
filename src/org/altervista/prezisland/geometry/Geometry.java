@@ -25,7 +25,6 @@ package org.altervista.prezisland.geometry;
 
 import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
-import java.util.Arrays;
 import java.util.List;
 import org.altervista.prezisland.geometry.algorithms.MinkowskiSum;
 import org.altervista.prezisland.geometry.shapes.AABB;
@@ -46,11 +45,13 @@ public final class Geometry {
             TRIANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(300, 100),
                 new Point2D.Double(100, 200), new Point2D.Double(250, 300)}),
             /*TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 100),
-                new Point2D.Double(100, 300), new Point2D.Double(200, 200)}),*/
+             new Point2D.Double(100, 300), new Point2D.Double(200, 200)}),*/
             TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(10, 30),
                 new Point2D.Double(10, 10), new Point2D.Double(20, 20)}),
             /* TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 200),
              new Point2D.Double(200, 300), new Point2D.Double(200, 100)});*/
+            RECTANGLE7 = new Polygon(new Point2D.Double[]{new Point2D.Double(30, 30),
+                new Point2D.Double(60, 30), new Point2D.Double(60, 60), new Point2D.Double(30, 60)}),
             TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(20, 10),
                 new Point2D.Double(20, 30), new Point2D.Double(10, 20)});
 
@@ -63,9 +64,9 @@ public final class Geometry {
         //     gui.addShape(RECTANGLE1);
         //gui.addShape(TRIANGLE1);
         // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
-        //gui.addShape(TRIANGLE2);
-        //gui.addShape(TRIANGLE3);
-        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, TRIANGLE3));
+        gui.addShape(TRIANGLE2);
+        gui.addShape(RECTANGLE7);
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));
     }
 
     public static void main(String[] args) {

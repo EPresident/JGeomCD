@@ -53,9 +53,18 @@ public class MinkowskiSum {
 
         minkowskiSumConvex_checkInput(pts1);
         minkowskiSumConvex_checkInput(pts2);
+        for (Point2D.Double p : pts1) {
+            System.out.print("(" + p.x + "," + p.y + ");");
+        }
+        System.out.println();
+        for (Point2D.Double p : pts2) {
+            System.out.print("(" + p.x + "," + p.y + ");");
+        }
+        System.out.println();
+
         /*
          Algorithm from "Computational Geometry, Algorithms and Applications",
-         page 295
+         page 295, adapted.
          */
         pts1.add(pts1.get(0));
         pts1.add(pts1.get(1));
@@ -63,19 +72,25 @@ public class MinkowskiSum {
         pts2.add(pts2.get(1));
         int i = 0, j = 0;
         do {
-            System.out.println("-----------\ni:" + i + ",j:" + j);
+            /*  System.out.println("-----------\ni:" + i + ",j:" + j);
+             System.out.println("i:" + pts1.get(i) + "," + pts1.get(i + 1));
+             System.out.println("j:" + pts2.get(j) + "," + pts2.get(j + 1));*/
             pts12.add(new Point2D.Double(pts1.get(i).x + pts2.get(j).x,
                     pts1.get(i).y + pts2.get(j).y));
-            System.out.println("Point added");
-            double angle1, angle2;
-            angle1 = normalizeAngle(Geometry.getAngle(pts1.get(i), pts1.get(i + 1)));
-            angle2 = normalizeAngle(Geometry.getAngle(pts2.get(j), pts2.get(j + 1)));
-            /*  double angle1 = Geometry.getAngle(pts1.get(i), pts1.get(i + 1)),
-             angle2 = Geometry.getAngle(pts2.get(j), pts2.get(j + 1));*/
 
-            /*System.out.println("i:" + pts1.get(i) + "," + pts1.get(i + 1));
-             System.out.println("j:" + pts2.get(j) + "," + pts2.get(j + 1));*/
-            System.out.println("angleI: " + (angle1 * 360 / 2 / Math.PI) + ", angleJ= " + angle2 * 360 / 2 / Math.PI);
+            double angle1, angle2;
+            if (i != pts1.size() - 2) {
+                angle1 = normalizeAngle(Geometry.getAngle(pts1.get(i), pts1.get(i + 1)));
+            } else {
+                angle1 = 9;
+            }
+            if (j != pts2.size() - 2) {
+                angle2 = normalizeAngle(Geometry.getAngle(pts2.get(j), pts2.get(j + 1)));
+            } else {
+                angle2 = 9;
+            }
+
+            // System.out.println("angleI: " + (angle1 * 360 / 2 / Math.PI) + ", angleJ= " + angle2 * 360 / 2 / Math.PI);
             if (angle1 < angle2) {
                 i++;
             } else if (angle1 > angle2) {
@@ -84,14 +99,13 @@ public class MinkowskiSum {
                 i++;
                 j++;
             }
-            System.out.println("updated: i:" + i + ",j:" + j);
 
         } while (i != pts1.size() - 2 || j != pts2.size() - 2);
 
-        for (Point2D.Double p : pts12) {
-            System.out.print("(" + p.x + "," + p.y + ");");
-        }
-        System.out.println();
+        /* for (Point2D.Double p : pts12) {
+         System.out.print("(" + p.x + "," + p.y + ");");
+         }
+         System.out.println();*/
         return new Polygon(pts12);
     }
 
