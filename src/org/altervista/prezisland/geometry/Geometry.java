@@ -45,10 +45,14 @@ public final class Geometry {
             RECTANGLE6 = new AABB(100, 220, 100, 200),
             TRIANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(300, 100),
                 new Point2D.Double(100, 200), new Point2D.Double(250, 300)}),
-            TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 100),
-                new Point2D.Double(100, 300), new Point2D.Double(200, 200)}),
-            TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(200, 100),
-                new Point2D.Double(100, 200), new Point2D.Double(200, 300)});
+            /*TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 100),
+                new Point2D.Double(100, 300), new Point2D.Double(200, 200)}),*/
+            TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(10, 30),
+                new Point2D.Double(10, 10), new Point2D.Double(20, 20)}),
+            /* TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 200),
+             new Point2D.Double(200, 300), new Point2D.Double(200, 100)});*/
+            TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(20, 10),
+                new Point2D.Double(20, 30), new Point2D.Double(10, 20)});
 
     private Geometry() {
         gui = new GeomGUI();
@@ -61,7 +65,7 @@ public final class Geometry {
         // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
         //gui.addShape(TRIANGLE2);
         //gui.addShape(TRIANGLE3);
-        gui.addShape(MinkowskiSum.bruteMinkowskiSumConvex(TRIANGLE2, TRIANGLE3));
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, TRIANGLE3));
     }
 
     public static void main(String[] args) {

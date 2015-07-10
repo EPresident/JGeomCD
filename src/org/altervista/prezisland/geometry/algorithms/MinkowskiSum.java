@@ -26,6 +26,7 @@ package org.altervista.prezisland.geometry.algorithms;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import org.altervista.prezisland.geometry.Geometry;
 import org.altervista.prezisland.geometry.shapes.Polygon;
 
 /**
@@ -48,46 +49,103 @@ public class MinkowskiSum {
     private Polygon minkowskiSumConvex_private(Polygon s1, Polygon s2) {
         ArrayList<Point2D.Double> pts1 = new ArrayList(s1.getPoints()),
                 pts2 = new ArrayList(s2.getPoints());
+        LinkedList<Point2D.Double> pts12 = new LinkedList<>();
 
-        /* 
-         Build Edge arrays:
-         We need to calculate the angle ( relative to the x axis ) for each
-         edge.
+        minkowskiSumConvex_checkInput(pts1);
+        minkowskiSumConvex_checkInput(pts2);
+        /*
+         Algorithm from "Computational Geometry, Algorithms and Applications",
+         page 295
          */
-        Edge[] E = new Edge[pts1.size() + pts2.size()];
-        for (int i = 0; i < pts1.size(); i++) {
-            E[i] = new Edge(pts1.get(i), pts1.get((i + 1) % pts1.size()));
+        pts1.add(pts1.get(0));
+        pts1.add(pts1.get(1));
+        pts2.add(pts2.get(0));
+        pts2.add(pts2.get(1));
+        int i = 0, j = 0;
+        do {
+            System.out.println("-----------\ni:" + i + ",j:" + j);
+            pts12.add(new Point2D.Double(pts1.get(i).x + pts2.get(j).x,
+                    pts1.get(i).y + pts2.get(j).y));
+            System.out.println("Point added");
+            double angle1, angle2;
+            angle1 = normalizeAngle(Geometry.getAngle(pts1.get(i), pts1.get(i + 1)));
+            angle2 = normalizeAngle(Geometry.getAngle(pts2.get(j), pts2.get(j + 1)));
+            /*  double angle1 = Geometry.getAngle(pts1.get(i), pts1.get(i + 1)),
+             angle2 = Geometry.getAngle(pts2.get(j), pts2.get(j + 1));*/
+
+            /*System.out.println("i:" + pts1.get(i) + "," + pts1.get(i + 1));
+             System.out.println("j:" + pts2.get(j) + "," + pts2.get(j + 1));*/
+            System.out.println("angleI: " + (angle1 * 360 / 2 / Math.PI) + ", angleJ= " + angle2 * 360 / 2 / Math.PI);
+            if (angle1 < angle2) {
+                i++;
+            } else if (angle1 > angle2) {
+                j++;
+            } else {
+                i++;
+                j++;
+            }
+            System.out.println("updated: i:" + i + ",j:" + j);
+
+        } while (i != pts1.size() - 2 || j != pts2.size() - 2);
+
+        for (Point2D.Double p : pts12) {
+            System.out.print("(" + p.x + "," + p.y + ");");
         }
-        for (int i = 0; i < pts2.size(); i++) {
-            E[pts1.size() + i] = new Edge(pts2.get(i), pts2.get((i + 1) % pts2.size()));
+        System.out.println();
+        return new Polygon(pts12);
+    }
+
+    private static void minkowskiSumConvex_checkInput(ArrayList<Point2D.Double> pts) {
+        // Make sure the first vertex has minimum y
+        // Due to Java Swing coordinates, Y is maximized (FIXME)
+        double minX = Double.MAX_VALUE, maxY = 0, minY = Double.MAX_VALUE;
+        int i = 0, index = -1;
+        for (Point2D.Double p : pts) {
+            if (p.y < minY || (p.y == minY && p.x < minX)) {
+                minX = p.x;
+                minY = p.y;
+                index = i;
+            }
+            i++;
         }
-        Sorting.mergeSort(E);
-        for (Edge e : E) {
-            System.out.print(e.angle + ",");
+        if (index != 0) {
+            /*  System.out.println("original:");
+             for (Point2D.Double p : pts) {
+             System.out.print("(" + p.x + "," + p.y + ");");
+             }
+             System.out.println();*/
+            // shift vertices
+            for (int j = 0; j < index; j++) {
+                pts.add(pts.get(0));
+                pts.remove(0);
+            }
         }
-        System.out.println("");
-        LinkedList<Point2D.Double> pts = new LinkedList<>();
-        for (Edge e : E) {
-            System.out.print(e + ",");
-            pts.add(e.a);
-            pts.add(e.b);
+
+        /*    for (Point2D.Double p : pts) {
+         System.out.print("(" + p.x + "," + p.y + ");");
+         }
+         System.out.println();*/
+    }
+
+    private static double normalizeAngle(double angle) {
+        if (angle < 0) {
+            // System.out.println("norm angle: " + angle + "(" + (angle * 360 / 2 / Math.PI) + ")");
+            return 2 * Math.PI + angle;
         }
-        System.out.println("\n");
-        return new Polygon(pts);
+        return angle;
     }
 
     public static Polygon bruteMinkowskiSumConvex(Polygon s1, Polygon s2) {
         //return INSTANCE.bruteMinkowskiSumConvex_private(s1, s2);
         ArrayList<Point2D.Double> pts1 = new ArrayList<>(s1.getPoints()),
-                pts2 = new ArrayList<>(s2.getPoints()), ptsn=new ArrayList<>();
+                pts2 = new ArrayList<>(s2.getPoints()), ptsn = new ArrayList<>();
         for (Point2D.Double p1 : pts1) {
             for (Point2D.Double p2 : pts2) {
-                ptsn.add(new Point2D.Double(p1.x+p2.x, p1.y+p2.y));
+                ptsn.add(new Point2D.Double(p1.x + p2.x, p1.y + p2.y));
             }
         }
         return new Polygon(ptsn);
     }
-
 
     /**
      * Utility class that represents a Polygon's edge, and stores its angle
