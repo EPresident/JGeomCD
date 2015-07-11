@@ -66,15 +66,15 @@ public final class Geometry {
         //     gui.addShape(RECTANGLE1);
         //gui.addShape(TRIANGLE1);
         // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
-      /*  gui.addShape(TRIANGLE2);
-         gui.addShape(RECTANGLE7);
-         gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));*/
+        gui.addShape(TRIANGLE2);
+        gui.addShape(RECTANGLE7);
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));
 
         // Convex Hull test
-        gui.addShape(new Polygon(ConvexHull.grahamConvexHull(Arrays.asList(
-                new Point2D.Double[]{new Point2D.Double(100, 100),
-                    new Point2D.Double(100, 300), new Point2D.Double(300, 300),
-                    new Point2D.Double(300, 100), new Point2D.Double(200, 150)}))));
+       /* gui.addShape(new Polygon(ConvexHull.grahamConvexHull(Arrays.asList(
+         new Point2D.Double[]{new Point2D.Double(100, 100),
+         new Point2D.Double(100, 300), new Point2D.Double(300, 300),
+         new Point2D.Double(300, 100), new Point2D.Double(200, 150)}))));*/
     }
 
     public static void main(String[] args) {
@@ -172,14 +172,14 @@ public final class Geometry {
          double crossProduct = (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y)
          + p3.x * (p1.y - p2.y));
          */
-        double crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * 
-                (p3.x - p1.x);
+        double crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y)
+                * (p3.x - p1.x);
         return crossProduct > 0;
     }
 
     /**
-     * Returns the direction of the segment p2-p3 relative to p1-p2.
-     * See https://en.wikipedia.org/wiki/Cross_product#Computational_geometry
+     * Returns the direction of the segment p2-p3 relative to p1-p2. See
+     * https://en.wikipedia.org/wiki/Cross_product#Computational_geometry
      *
      * @param p1 A Point
      * @param p2 A Point
@@ -187,8 +187,8 @@ public final class Geometry {
      * @return 1 for left turn, -1 for right turn, 0 for collinearity.
      */
     public static int getTurn(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3) {
-        double crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * 
-                (p3.x - p1.x);
+        double crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y)
+                * (p3.x - p1.x);
         if (crossProduct > 0) {
             return 1;
         } else if (crossProduct < 0) {

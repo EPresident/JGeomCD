@@ -158,7 +158,7 @@ public class MinkowskiSum {
                 ptsn.add(new Point2D.Double(p1.x + p2.x, p1.y + p2.y));
             }
         }
-        return new Polygon(ptsn);
+        return new Polygon(ConvexHull.grahamConvexHull(ptsn));
     }
 
     /**
