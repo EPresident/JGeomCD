@@ -67,7 +67,11 @@ public final class Geometry {
         //gui.addShape(TRIANGLE1);
         // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
         gui.addShape(TRIANGLE2);
+        System.out.println("tr2 "+TRIANGLE2.getCenter());
         gui.addShape(RECTANGLE7);
+        System.out.println("r7 "+RECTANGLE7.getCenter());
+        gui.addShape(RECTANGLE1);
+        System.out.println("r1 "+RECTANGLE1.getCenter());
         gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));
 
         // Convex Hull test

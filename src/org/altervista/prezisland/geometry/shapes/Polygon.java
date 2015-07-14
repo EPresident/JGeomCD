@@ -52,50 +52,52 @@ public class Polygon {
         points = new ArrayList<>(pts);
         center = calculateCenter();
     }
-    
-    protected Polygon(Collection<Point2D.Double> pts, Point2D.Double ctr){
+
+    protected Polygon(Collection<Point2D.Double> pts, Point2D.Double ctr) {
         points = new ArrayList<>(pts);
         center = ctr;
     }
-    
-    protected Polygon(Point2D.Double[] pts, Point2D.Double ctr){
+
+    protected Polygon(Point2D.Double[] pts, Point2D.Double ctr) {
         points = new ArrayList<>(Arrays.asList(pts));
         center = ctr;
-      /*  System.out.print("new shape : ");
-        for(Point2D p : points){
-            System.out.print(p+";");
-        }*/
+        /*  System.out.print("new shape : ");
+         for(Point2D p : points){
+         System.out.print(p+";");
+         }*/
     }
 
     /**
      * Calculates the center of this generic Shape by enclosing it in a bounding
      * rectangle.
+     *
      * @return The center of this Shape
      */
     protected Point2D.Double calculateCenter() {
-        double maxX=0, maxY=0, minX=999999999, minY=999999999;
+        double maxX = 0, maxY = 0, minX = 999999999, minY = 999999999;
         for (Point2D.Double p : points) {
-            if(p.x>maxX){
-                maxX=p.x;
+            if (p.x > maxX) {
+                maxX = p.x;
             }
-            if(p.x<minX){
-                minX=p.x;
+            if (p.x < minX) {
+                minX = p.x;
             }
-            if(p.y>maxY){
-                maxY=p.y;
+            if (p.y > maxY) {
+                maxY = p.y;
             }
-            if(p.y<minY){
-                maxY=p.y;
+            if (p.y < minY) {
+                maxY = p.y;
             }
         }
-        double w=maxX-minX, h=maxY-minY;
-        return new Point2D.Double(minX+w/2,minY+h/2);
+        double w = maxX - minX, h = maxY - minY;
+    //    System.out.println("center: " + new Point2D.Double(minX + w / 2, minY + h / 2));
+        return new Point2D.Double(minX + w / 2, minY + h / 2);
     }
 
-    public Point2D.Double getCenter(){
+    public Point2D.Double getCenter() {
         return center;
     }
-    
+
     /**
      * @return The list of points composing this shape.
      */
@@ -111,8 +113,9 @@ public class Polygon {
     }
 
     /**
-     * Calculate the separating axes for this shape, <i>if</i> they aren't 
+     * Calculate the separating axes for this shape, <i>if</i> they aren't
      * defined yet.
+     *
      * @return An Array of separating (unit) axes for this shape, i.e. the axes
      * perpendicular to each edge.
      */
@@ -128,10 +131,10 @@ public class Polygon {
         return separatingAxes;
     }
 
-    public double getDistance(Polygon s){
+    public double getDistance(Polygon s) {
         return this.center.distance(s.center);
     }
-    
+
     /**
      * Traslate the Shape a set distance, moving all of its points.
      *
@@ -159,12 +162,12 @@ public class Polygon {
     public AABB getBoundingRectangle() {
         throw new UnsupportedOperationException("NYI");
     }
-    
-    public CartesianVector[] getEdges(){
-        CartesianVector[] edges = new CartesianVector[points.size()-1];
+
+    public CartesianVector[] getEdges() {
+        CartesianVector[] edges = new CartesianVector[points.size() - 1];
         for (int i = 0; i < edges.length; i++) {
-            edges[i]=new CartesianVector(points.get(i).x, points.get(i).y,
-                    points.get(i+1).x, points.get(i+1).y);
+            edges[i] = new CartesianVector(points.get(i).x, points.get(i).y,
+                    points.get(i + 1).x, points.get(i + 1).y);
         }
         return edges;
     }

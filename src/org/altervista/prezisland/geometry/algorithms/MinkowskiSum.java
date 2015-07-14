@@ -65,6 +65,7 @@ public class MinkowskiSum {
         /*
          Algorithm from "Computational Geometry, Algorithms and Applications",
          page 295, adapted.
+         Running time: O(n+m), where n = # points of s1 and m = # points of s2
          */
         pts1.add(pts1.get(0));
         pts1.add(pts1.get(1));
@@ -111,13 +112,13 @@ public class MinkowskiSum {
 
     private static void minkowskiSumConvex_checkInput(ArrayList<Point2D.Double> pts) {
         // Make sure the first vertex has minimum y
-        // Due to Java Swing coordinates, Y is maximized (FIXME)
-        double minX = Double.MAX_VALUE, maxY = 0, minY = Double.MAX_VALUE;
+        // Maximizing Y due to Java Swing coordinate system (FIXME)
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxY=-1;
         int i = 0, index = -1;
         for (Point2D.Double p : pts) {
-            if (p.y < minY || (p.y == minY && p.x < minX)) {
+            if (p.y > maxY || (p.y == maxY && p.x < minX)) {
                 minX = p.x;
-                minY = p.y;
+                maxY = p.y;
                 index = i;
             }
             i++;

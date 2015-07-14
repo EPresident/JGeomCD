@@ -200,6 +200,7 @@ public class GeomGUI extends javax.swing.JFrame {
             }
             Color c = g.getColor();
             g.setColor(Color.black);
+            System.out.println("drawing "+s.getCenter());
             g.fillRect((int) s.getCenter().x - POINT_HALFWIDTH, (int) s.getCenter().y - POINT_HALFWIDTH,
                     POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
             g.setColor(c);
@@ -252,7 +253,7 @@ public class GeomGUI extends javax.swing.JFrame {
     private void initComponents() {
 
         drawPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
+        controlsPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Geometry GUI");
@@ -260,10 +261,13 @@ public class GeomGUI extends javax.swing.JFrame {
         setBounds(new java.awt.Rectangle(0, 0, 800, 600));
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setMinimumSize(new java.awt.Dimension(200, 150));
+        setPreferredSize(new java.awt.Dimension(800, 600));
         setSize(new java.awt.Dimension(800, 600));
 
         drawPanel.setBackground(new java.awt.Color(255, 255, 212));
         drawPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        drawPanel.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
+        drawPanel.setMinimumSize(new java.awt.Dimension(200, 200));
         drawPanel.setName("drawPanel"); // NOI18N
         drawPanel.setPreferredSize(new java.awt.Dimension(800, 500));
         drawPanel.setVerifyInputWhenFocusTarget(false);
@@ -276,38 +280,39 @@ public class GeomGUI extends javax.swing.JFrame {
         );
         drawPanelLayout.setVerticalGroup(
             drawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 497, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        jPanel1.setBackground(drawPanel.getBackground());
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Controls", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
-        jPanel1.setMinimumSize(new java.awt.Dimension(100, 50));
-        jPanel1.setPreferredSize(new java.awt.Dimension(800, 100));
+        controlsPanel.setBackground(drawPanel.getBackground());
+        controlsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Controls", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+        controlsPanel.setMaximumSize(new java.awt.Dimension(2147483647, 200));
+        controlsPanel.setMinimumSize(new java.awt.Dimension(200, 100));
+        controlsPanel.setPreferredSize(new java.awt.Dimension(800, 100));
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout controlsPanelLayout = new javax.swing.GroupLayout(controlsPanel);
+        controlsPanel.setLayout(controlsPanelLayout);
+        controlsPanelLayout.setHorizontalGroup(
+            controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 788, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 74, Short.MAX_VALUE)
+        controlsPanelLayout.setVerticalGroup(
+            controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 78, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(controlsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(drawPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(drawPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
+                .addComponent(drawPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
+                .addComponent(controlsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleDescription("");
@@ -351,7 +356,7 @@ public class GeomGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel controlsPanel;
     private javax.swing.JPanel drawPanel;
-    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }
