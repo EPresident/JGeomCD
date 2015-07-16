@@ -101,7 +101,7 @@ public class Polygon {
     /**
      * @return The list of points composing this shape.
      */
-    public List<Point2D.Double> getPoints() {
+    public ArrayList<Point2D.Double> getPoints() {
         return points;
     }
 

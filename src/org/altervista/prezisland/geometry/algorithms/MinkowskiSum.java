@@ -116,9 +116,11 @@ public class MinkowskiSum {
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxY=-1;
         int i = 0, index = -1;
         for (Point2D.Double p : pts) {
-            if (p.y > maxY || (p.y == maxY && p.x < minX)) {
+           // if (p.y > maxY || (p.y == maxY && p.x < minX)) {
+            if (p.y < minY || (p.y == minY && p.x < minX)) {
                 minX = p.x;
-                maxY = p.y;
+           //     maxY = p.y;
+                minY = p.y;
                 index = i;
             }
             i++;

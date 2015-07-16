@@ -25,9 +25,7 @@ package org.altervista.prezisland.geometry;
 
 import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
-import java.util.Arrays;
 import java.util.List;
-import org.altervista.prezisland.geometry.algorithms.ConvexHull;
 import org.altervista.prezisland.geometry.algorithms.MinkowskiSum;
 import org.altervista.prezisland.geometry.shapes.AABB;
 
