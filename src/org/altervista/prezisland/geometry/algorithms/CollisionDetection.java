@@ -71,6 +71,7 @@ public class CollisionDetection {
 
     /**
      * Given two left shadows A and B, discriminate w agains A*B Time O(log n)
+     * See "Ruler, Compass and Computer" (Guibas & Stolfi)
      *
      * @param A left shadow of a convex polygon P
      * @param B left shadow (reversed right shadow of P)
@@ -83,11 +84,29 @@ public class CollisionDetection {
                 a2 = A.getPoints().get(A.getPoints().size() - 1),
                 b1 = A.getPoints().get(0),
                 b2 = A.getPoints().get(A.getPoints().size() - 1);
-        // Median point indexes
-        int f = A.getPoints().size() / 2, g = B.getPoints().size() / 2;
-        if (Geometry.getNormalizedAngle(A.getPoints().get(f), A.getPoints().get(f + 1))
-                < Geometry.getNormalizedAngle(B.getPoints().get(g), B.getPoints().get(g + 1))) {
-
+        // Loop until a shadow is reduced to a single vertex
+        while (A.getPointsNumber() > 1 && B.getPointsNumber() > 1) {
+            // Median point indexes
+            int i = A.getPoints().size() / 2, j = B.getPoints().size() / 2;
+            // Check if the segments starting from i and j are in slope order
+            if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
+                    < Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
+                int k = i;
+                i = j;
+                j = k;
+                Polygon C = A;
+                A = B;
+                B = C;
+            }
+            // Now assuming f and g are in slope order
+            // Calculate the displacement of f in the chain D (Al*Bl - f - g - Ah*Bh)
+            double f1X = A.getPoints().get(i).x + B.getPoints().get(j).x,
+                    f1Y = A.getPoints().get(i).y + B.getPoints().get(j).y;
+            double f2X = f1X+A.getPoints().get(i+1).x,
+                    f2Y = f1Y + A.getPoints().get(i+1).y;
+            // g1 == f2
+            double g2X = f2X+B.getPoints().get(j+1).x,
+                    g2Y = f2Y + B.getPoints().get(j+1).y;
         }
 
         return 0;

@@ -33,24 +33,56 @@ import java.awt.geom.Point2D;
 public class Line {
 
     private double slope, yIntercept;
+    public static final double INFINITY = Double.MAX_VALUE;
+
+    public static enum Position {
+
+        LEFT, ABOVE, RIGHT, BELOW
+    };
 
     public Line(Point2D.Double p1, Point2D.Double p2) {
-        if (p1.x != p2.x) {
-            if (p1.y != p2.y) {
-                slope = (p2.y - p1.y) / (p2.x - p1.x);
-                yIntercept = (p2.x * p1.y - p1.x * p2.y) / (p2.x - p1.x);
+        /*  if (p1.x != p2.x) {
+         if (p1.y != p2.y) {
+         slope = (p2.y - p1.y) / (p2.x - p1.x);
+         yIntercept = (p2.x * p1.y - p1.x * p2.y) / (p2.x - p1.x);
+         } else {
+         throw new RuntimeException("Points are equal!");
+         }
+         } else {
+         slope = 1;
+         yIntercept = 0;
+         }*/
+        this(p1.x, p1.y, p2.x, p2.y);
+    }
+
+    public Line(double p1X, double p1Y, double p2X, double p2Y) {
+        if (p1X != p2X) {
+            if (p1Y != p2Y) {
+                // Oblique line
+                slope = (p2Y - p1Y) / (p2X - p1X);
+                yIntercept = (p2X * p1Y - p1X * p2Y) / (p2X - p1X);
             } else {
-                throw new RuntimeException("Points are equal!");
+                // Horizontal line
+                slope = 0;
+                yIntercept = p1Y;
             }
+        } else if (p1Y != p2Y) {
+            // Vertical line
+            slope = INFINITY;
+            yIntercept = p1X;
         } else {
-            slope = 1;
-            yIntercept = 0;
+            // Line degenerates into a Point
+            throw new RuntimeException("Points are equal!");
         }
     }
 
     public Line(double m, double q) {
         this.slope = m;
         this.yIntercept = q;
+    }
+
+    public Position testAgainst(Point2D.Double p) {
+
     }
 
     public double getSlope() {
