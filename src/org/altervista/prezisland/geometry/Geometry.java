@@ -60,17 +60,18 @@ public final class Geometry {
         gui.setVisible(true);
         /*gui.addShape(RECTANGLE1);
          gui.addShape(RECTANGLE6);*/
+        
         // Convolution test
         //     gui.addShape(RECTANGLE1);
         //gui.addShape(TRIANGLE1);
         // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
-        gui.addShape(TRIANGLE2);
+    /*    gui.addShape(TRIANGLE2);
         System.out.println("tr2 "+TRIANGLE2.getCenter());
         gui.addShape(RECTANGLE7);
         System.out.println("r7 "+RECTANGLE7.getCenter());
         gui.addShape(RECTANGLE1);
         System.out.println("r1 "+RECTANGLE1.getCenter());
-        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));*/
 
         // Convex Hull test
        /* gui.addShape(new Polygon(ConvexHull.grahamConvexHull(Arrays.asList(

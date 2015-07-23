@@ -27,6 +27,8 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,10 +39,13 @@ import java.util.List;
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
-public class GeomGUI extends javax.swing.JFrame {
+public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     private static final int POINT_HALFWIDTH = 2;
+    private Polygon activePoly;
+    private Point2D.Double origin;
     private final LinkedList<Polygon> shapes;
+    private final LinkedList<Point2D.Double> points;
 
     /**
      * Creates new form GeomGUI
@@ -48,6 +53,9 @@ public class GeomGUI extends javax.swing.JFrame {
     public GeomGUI() {
         initComponents();
         shapes = new LinkedList<>();
+        activePoly = null;
+        points = new LinkedList<>();
+        origin = new Point2D.Double(0, drawPanel.getHeight());
     }
 
     public Graphics2D getDrawPanelGraphics() {
@@ -56,27 +64,27 @@ public class GeomGUI extends javax.swing.JFrame {
 
     @Override
     public void paint(Graphics g) {
+        System.out.println("window size: " + getWidth() + "," + getHeight());
+        System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());
+        origin.setLocation(drawPanel.getLocation().getX(), drawPanel.getHeight());
+        System.out.println("origin: " + origin);
         g.clearRect(0, 0, this.getWidth(), getHeight());
         this.paintComponents(g);
         drawGrid(drawPanel.getGraphics());
         for (Polygon s : shapes) {
             drawShape(s, drawPanel.getGraphics());
         }
-        /* 
-        // Draw Penetration vectors
-        for (int i = 0; i < shapes.size() - 1; i++) {
-            g.setColor(Color.red);
-            CartesianVector pv = getPenetrationVector(shapes.get(i), shapes.get(i + 1));
-            System.out.println(pv);
-            drawVector(drawPanel.getGraphics(), (int) shapes.get(i).getPoints().get(0).x,
-                    (int) shapes.get(i).getPoints().get(0).y,
-                    (int) (shapes.get(i).getPoints().get(0).x + pv.getVx()),
-                    (int) (shapes.get(i).getPoints().get(0).y + pv.getVy()));
-        }*/
+        for (Point2D.Double p : points) {
+            drawPoint(p, drawPanel.getGraphics());
+        }
     }
 
     public void addShape(Polygon s) {
         shapes.add(s);
+    }
+
+    public void addPoint(Point2D.Double p) {
+        points.add(p);
     }
 
     private CartesianVector getPenetrationVector(Polygon s1, Polygon s2) {
@@ -177,34 +185,46 @@ public class GeomGUI extends javax.swing.JFrame {
                     .makeUnit();
             return new CartesianVector(-v.getVx(), -v.getVy());
         }
-        return new CartesianVector(0,0);
+        return new CartesianVector(0, 0);
     }
 
     private void drawShape(Polygon s, Graphics g) {
         List<Point2D.Double> pts = s.getPoints();
         if (pts.size() > 1) {
             for (int i = 0; i < pts.size(); i++) {
-                Point2D.Double p1 = pts.get(i), p2 = pts.get((i + 1) % pts.size());
+                Point2D.Double p1 = normalizePoint(pts.get(i)),
+                        p2 = normalizePoint(pts.get((i + 1) % pts.size()));
                 Color c = g.getColor();
                 g.setColor(Color.CYAN);
                 g.drawLine((int) p1.x, (int) p1.y, (int) p2.x, (int) p2.y);
                 g.setColor(c);
             }
             for (Point2D.Double p : pts) {
+                Point2D.Double pp = normalizePoint(p);
                 Color c = g.getColor();
                 g.setColor(Color.BLUE);
-                g.fillRect((int) p.x - POINT_HALFWIDTH, (int) p.y - POINT_HALFWIDTH,
+                g.fillRect((int) pp.x - POINT_HALFWIDTH, (int) pp.y - POINT_HALFWIDTH,
                         POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
                 //      System.out.println("drawing point ("+p.x+","+p.y+")");
                 g.setColor(c);
             }
             Color c = g.getColor();
             g.setColor(Color.black);
-            System.out.println("drawing "+s.getCenter());
-            g.fillRect((int) s.getCenter().x - POINT_HALFWIDTH, (int) s.getCenter().y - POINT_HALFWIDTH,
+            // System.out.println("drawing " + s.getCenter());
+            g.fillRect((int) normalizePoint(s.getCenter()).x - POINT_HALFWIDTH, 
+                    (int) normalizePoint(s.getCenter()).y - POINT_HALFWIDTH,
                     POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
             g.setColor(c);
         }
+    }
+
+    private void drawPoint(Point2D.Double p, Graphics g) {
+        Color c = g.getColor();
+        g.setColor(Color.BLUE);
+        g.fillRect((int) normalizePoint(p).x - POINT_HALFWIDTH, 
+                (int) normalizePoint(p).y - POINT_HALFWIDTH,
+                POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
+        g.setColor(c);
     }
 
     private void drawGrid(Graphics g) {
@@ -243,6 +263,11 @@ public class GeomGUI extends javax.swing.JFrame {
         }
     }
 
+    private Point2D.Double normalizePoint(final Point2D.Double p){
+        double pY = origin.y - p.y;
+        return new Point2D.Double(p.x,pY);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -359,4 +384,35 @@ public class GeomGUI extends javax.swing.JFrame {
     private javax.swing.JPanel controlsPanel;
     private javax.swing.JPanel drawPanel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        Point2D p = e.getPoint();
+        if (activePoly != null) {
+            ArrayList<Point2D.Double> pts = activePoly.getPoints();
+            double offsetX = p.getX() - pts.get(0).x,
+                    offsetY = p.getY() - pts.get(0).y;
+            activePoly.traslate(offsetX, offsetY);
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
 }
