@@ -26,18 +26,21 @@ package org.altervista.prezisland.geometry;
 import java.awt.geom.Point2D;
 
 /**
- * Class representing an infinite, continuous line.
+ * Class representing an infinite, continuous line. a*y + b*x + c = 0
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
 public class Line {
 
     private double slope, yIntercept;
+    private double a, b, c;
     public static final double INFINITY = Double.MAX_VALUE;
 
     public static enum Position {
 
-        LEFT, ABOVE, RIGHT, BELOW
+        LEFT, //ABOVE, 
+        RIGHT, //BELOW, 
+        COLLIDES
     };
 
     public Line(Point2D.Double p1, Point2D.Double p2) {
@@ -56,24 +59,32 @@ public class Line {
     }
 
     public Line(double p1X, double p1Y, double p2X, double p2Y) {
-        if (p1X != p2X) {
-            if (p1Y != p2Y) {
-                // Oblique line
-                slope = (p2Y - p1Y) / (p2X - p1X);
-                yIntercept = (p2X * p1Y - p1X * p2Y) / (p2X - p1X);
-            } else {
-                // Horizontal line
-                slope = 0;
-                yIntercept = p1Y;
-            }
-        } else if (p1Y != p2Y) {
-            // Vertical line
-            slope = INFINITY;
-            yIntercept = p1X;
-        } else {
-            // Line degenerates into a Point
-            throw new RuntimeException("Points are equal!");
+        a = p2X - p1X;
+        b = p1Y - p2Y;
+        c = p1Y * (p1X - p2X) + p1X * (p2Y - p1Y);
+        if (a == 0 && b == 0) {
+            throw new RuntimeException("Points are equal! Invalid Line.");
         }
+        slope = (-a)/b;
+        yIntercept = (-c)/b;
+        /* if (p1X != p2X) {
+         if (p1Y != p2Y) {
+         // Oblique line
+         slope = (p2Y - p1Y) / (p2X - p1X);
+         yIntercept = (p2X * p1Y - p1X * p2Y) / (p2X - p1X);
+         } else {
+         // Horizontal line
+         slope = 0;
+         yIntercept = p1Y;
+         }
+         } else if (p1Y != p2Y) {
+         // Vertical line
+         slope = INFINITY;
+         yIntercept = INFINITY;
+         } else {
+         // Line degenerates into a Point
+         throw new RuntimeException("Points are equal! Invalid Line.");
+         }*/
     }
 
     public Line(double m, double q) {
@@ -82,7 +93,34 @@ public class Line {
     }
 
     public Position testAgainst(Point2D.Double p) {
-
+        if (a == 0) {
+            // Vertical line
+            if(p.x < - (c/b)){
+                return Position.LEFT;
+            }if(p.x > - (c/b)){
+                return Position.RIGHT;
+            }else{
+                return Position.COLLIDES;
+            }
+        } else if (b == 0) {
+            // Horizontal line
+            if(p.y < - (c/a)){
+                return Position.RIGHT;
+            }if(p.y > - (c/a)){
+                return Position.LEFT;
+            }else{
+                return Position.COLLIDES;
+            }
+        } else {
+            // Oblique line
+            if(p.y > slope * p.x + yIntercept){
+                return Position.RIGHT;
+            }else  if(p.y < slope * p.x + yIntercept){
+                return Position.LEFT;
+            }else{
+                return Position.COLLIDES;
+            }
+        }
     }
 
     public double getSlope() {
@@ -91,6 +129,18 @@ public class Line {
 
     public double getYIntercept() {
         return yIntercept;
+    }
+
+    public double getA() {
+        return a;
+    }
+
+    public double getB() {
+        return b;
+    }
+
+    public double getC() {
+        return c;
     }
 
 }

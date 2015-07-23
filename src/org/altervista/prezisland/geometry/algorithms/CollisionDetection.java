@@ -26,6 +26,9 @@ package org.altervista.prezisland.geometry.algorithms;
 import java.awt.geom.Point2D;
 import java.util.List;
 import org.altervista.prezisland.geometry.Geometry;
+import org.altervista.prezisland.geometry.Line;
+import org.altervista.prezisland.geometry.Line.Position;
+import static org.altervista.prezisland.geometry.Line.Position.*;
 import org.altervista.prezisland.geometry.shapes.Polygon;
 
 /**
@@ -102,11 +105,74 @@ public class CollisionDetection {
             // Calculate the displacement of f in the chain D (Al*Bl - f - g - Ah*Bh)
             double f1X = A.getPoints().get(i).x + B.getPoints().get(j).x,
                     f1Y = A.getPoints().get(i).y + B.getPoints().get(j).y;
-            double f2X = f1X+A.getPoints().get(i+1).x,
-                    f2Y = f1Y + A.getPoints().get(i+1).y;
+            double f2X = f1X + A.getPoints().get(i + 1).x,
+                    f2Y = f1Y + A.getPoints().get(i + 1).y;
             // g1 == f2
-            double g2X = f2X+B.getPoints().get(j+1).x,
-                    g2Y = f2Y + B.getPoints().get(j+1).y;
+            double g2X = f2X + B.getPoints().get(j + 1).x,
+                    g2Y = f2Y + B.getPoints().get(j + 1).y;
+            Line lineF = new Line(f1X, f1Y, f2X, f2Y),
+                    lineG = new Line(f2X, f2Y, g2X, g2Y);
+            Position testF = lineF.testAgainst(w),
+                    testG = lineG.testAgainst(w);
+            if (w.y > g2Y
+                    || (testF == RIGHT && testG == RIGHT && w.y > f2Y)) {
+                // ABOVE
+                // Drop Al and f
+                A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
+            } else if (w.y < f1Y
+                    || (testF == RIGHT && testG == RIGHT && w.y < f2Y)) {
+                // BELOW
+                // Drop Bh and g
+                B = new Polygon(B.getPoints().subList(0, j + 1));
+            } else if (testF == RIGHT && testG == RIGHT && w.y == f2Y) {
+                // IN BETWEEN
+                // below/above sans g/f ?
+                B = new Polygon(B.getPoints().subList(0, j + 2));
+                System.out.println("Warning: in between.");
+            } else if ((testF == LEFT || testF == COLLIDES)
+                    && (testG == LEFT || testG == COLLIDES)) {
+                // LEFT
+                return 1;
+            } else {
+                // ???
+            }
+
+        }
+        // End loop
+        // One shadow is reduced to one vertex v, check the other one against w-v
+        if (A.getPointsNumber() == 1) {
+            w.setLocation(w.x - A.getPoints().get(0).x, w.y - A.getPoints().get(0).y);
+        } else if (B.getPointsNumber() == 1) {
+            w.setLocation(w.x - B.getPoints().get(0).x, w.y - B.getPoints().get(0).y);
+            A = B;
+        } else {
+            throw new RuntimeException("Impossible? Shadows not reduced to one vertex.");
+        }
+
+        // Binary search in the remaining shadow
+        int i = A.getPointsNumber() / 2;
+        while (A.getPointsNumber() >= 2) {
+            Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
+            Line l = new Line(e1, e2);
+            Position pos = l.testAgainst(w);
+            if (pos == LEFT || pos == COLLIDES) {
+                if (w.y >= e1.y && w.y <= e2.y) {
+                    // w lies inside
+                    return 1;
+                } else if (w.y < e1.y) {
+                    // w is below e1
+                    A = new Polygon(A.getPoints().subList(0, i));
+                    i = A.getPointsNumber() / 2;
+                } else {
+                    // w is above e2
+                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber()));
+                    i = A.getPointsNumber() / 2;
+                }
+            } else {
+                // w is outside
+                return 0;
+            }
+
         }
 
         return 0;
