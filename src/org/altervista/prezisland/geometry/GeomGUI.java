@@ -56,6 +56,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         activePoly = null;
         points = new LinkedList<>();
         origin = new Point2D.Double(0, drawPanel.getHeight());
+      //  controlsPanel.setVisible(false);
     }
 
     public Graphics2D getDrawPanelGraphics() {
@@ -77,6 +78,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         for (Point2D.Double p : points) {
             drawPoint(p, drawPanel.getGraphics());
         }
+        drawOrigin();
     }
 
     public void addShape(Polygon s) {
@@ -211,7 +213,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
             Color c = g.getColor();
             g.setColor(Color.black);
             // System.out.println("drawing " + s.getCenter());
-            g.fillRect((int) normalizePoint(s.getCenter()).x - POINT_HALFWIDTH, 
+            g.fillRect((int) normalizePoint(s.getCenter()).x - POINT_HALFWIDTH,
                     (int) normalizePoint(s.getCenter()).y - POINT_HALFWIDTH,
                     POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
             g.setColor(c);
@@ -221,23 +223,56 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     private void drawPoint(Point2D.Double p, Graphics g) {
         Color c = g.getColor();
         g.setColor(Color.BLUE);
-        g.fillRect((int) normalizePoint(p).x - POINT_HALFWIDTH, 
+        g.fillRect((int) normalizePoint(p).x - POINT_HALFWIDTH,
                 (int) normalizePoint(p).y - POINT_HALFWIDTH,
                 POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
         g.setColor(c);
     }
 
+    private void drawOrigin() {
+        Graphics g = drawPanel.getGraphics();
+        Color cc = g.getColor();
+        g.setColor(Color.RED);
+        g.fillRect((int) origin.x - POINT_HALFWIDTH,
+                (int) origin.y - POINT_HALFWIDTH,
+                POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
+        g.setColor(cc);
+    }
+
+    private void drawPoint(Point2D.Double p, Graphics g, Color c) {
+        Color cc = g.getColor();
+        g.setColor(c);
+        g.fillRect((int) normalizePoint(p).x - POINT_HALFWIDTH,
+                (int) normalizePoint(p).y - POINT_HALFWIDTH,
+                POINT_HALFWIDTH * 2, POINT_HALFWIDTH * 2);
+        g.setColor(cc);
+    }
+
     private void drawGrid(Graphics g) {
+        /*   g.setColor(Color.lightGray);
+         for (int i = 0; i < drawPanel.getWidth(); i += 50) {
+         for (int j = 0; j < drawPanel.getHeight(); j += 50) {
+         g.drawLine(i, j, i + drawPanel.getWidth(), j);
+         g.drawLine(i, j, i, j + drawPanel.getHeight());
+         }
+         }
+         g.setColor(Color.gray);
+         for (int i = 0; i < drawPanel.getWidth(); i += 100) {
+         for (int j = 0; j < drawPanel.getHeight(); j += 100) {
+         g.drawLine(i, j, i + drawPanel.getWidth(), j);
+         g.drawLine(i, j, i, j + drawPanel.getHeight());
+         }
+         }*/
         g.setColor(Color.lightGray);
         for (int i = 0; i < drawPanel.getWidth(); i += 50) {
-            for (int j = 0; j < drawPanel.getHeight(); j += 50) {
+            for (int j = (int) origin.y; j > -50; j -= 50) {
                 g.drawLine(i, j, i + drawPanel.getWidth(), j);
                 g.drawLine(i, j, i, j + drawPanel.getHeight());
             }
         }
         g.setColor(Color.gray);
         for (int i = 0; i < drawPanel.getWidth(); i += 100) {
-            for (int j = 0; j < drawPanel.getHeight(); j += 100) {
+            for (int j = (int) origin.y; j > -100; j -= 100) {
                 g.drawLine(i, j, i + drawPanel.getWidth(), j);
                 g.drawLine(i, j, i, j + drawPanel.getHeight());
             }
@@ -263,11 +298,11 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         }
     }
 
-    private Point2D.Double normalizePoint(final Point2D.Double p){
+    private Point2D.Double normalizePoint(final Point2D.Double p) {
         double pY = origin.y - p.y;
-        return new Point2D.Double(p.x,pY);
+        return new Point2D.Double(p.x, pY);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

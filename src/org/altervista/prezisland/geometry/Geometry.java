@@ -60,24 +60,26 @@ public final class Geometry {
         gui.setVisible(true);
         /*gui.addShape(RECTANGLE1);
          gui.addShape(RECTANGLE6);*/
-        
+
         // Convolution test
         //     gui.addShape(RECTANGLE1);
         //gui.addShape(TRIANGLE1);
         // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
     /*    gui.addShape(TRIANGLE2);
-        System.out.println("tr2 "+TRIANGLE2.getCenter());
-        gui.addShape(RECTANGLE7);
-        System.out.println("r7 "+RECTANGLE7.getCenter());
-        gui.addShape(RECTANGLE1);
-        System.out.println("r1 "+RECTANGLE1.getCenter());
-        gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));*/
-
+         System.out.println("tr2 "+TRIANGLE2.getCenter());
+         gui.addShape(RECTANGLE7);
+         System.out.println("r7 "+RECTANGLE7.getCenter());
+         gui.addShape(RECTANGLE1);
+         System.out.println("r1 "+RECTANGLE1.getCenter());
+         gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));*/
         // Convex Hull test
        /* gui.addShape(new Polygon(ConvexHull.grahamConvexHull(Arrays.asList(
          new Point2D.Double[]{new Point2D.Double(100, 100),
          new Point2D.Double(100, 300), new Point2D.Double(300, 300),
          new Point2D.Double(300, 100), new Point2D.Double(200, 150)}))));*/
+        gui.addShape(new Polygon(new Point2D.Double[]{new Point2D.Double(200, 100),
+            new Point2D.Double(300, 100), new Point2D.Double(350, 200),
+            new Point2D.Double(250, 250), new Point2D.Double(150, 200)}));
     }
 
     public static void main(String[] args) {
