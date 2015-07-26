@@ -24,7 +24,9 @@
 package org.altervista.prezisland.geometry.algorithms;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
+import org.altervista.prezisland.geometry.GeomGUI;
 import org.altervista.prezisland.geometry.Geometry;
 import org.altervista.prezisland.geometry.Line;
 import org.altervista.prezisland.geometry.Line.Position;
@@ -47,7 +49,7 @@ public class CollisionDetection {
      } while (l-r>0);
      return null;
      }*/
-    public double getPenetrationAmount(Polygon P1, Polygon P2, int pMin, int pMax, int qMin, int qMax) {
+    public static double getPenetrationAmount(final Polygon P1, final Polygon P2) {
         Polygon P = new Polygon(P1.getPoints()), Q = new Polygon(P2.getPoints());
         // Reference point for P
         Point2D.Double x = P.getPoints().get(0);
@@ -58,9 +60,38 @@ public class CollisionDetection {
         P.traslate(-x.x, -x.y);
         Q.traslate(-y.x, -y.y);
 
-        /* ---------------------------
-         Algorithm begins here
-         ---------------------------*/
+        int i = -1, j = -1;
+        double max = 0, min = Double.MAX_VALUE;
+        for (int k = 0; k < P1.getPointsNumber(); k++) {
+            Point2D.Double p = P1.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int pMin = j, pMax = i;
+
+        i = -1;
+        j = -1;
+        max = 0;
+        min = Double.MAX_VALUE;
+        for (int k = 0; k < P2.getPointsNumber(); k++) {
+            Point2D.Double p = P2.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int qMin = j, qMax = i;
+
         // Left shadow of P
         List<Point2D.Double> A = P.getPoints().subList(pMin, pMax + 1);
         // Right shadow of Q (inverted)
@@ -72,6 +103,75 @@ public class CollisionDetection {
         return 0;
     }
 
+    public static double getGuiPenAm(Polygon P1, Polygon P2, GeomGUI gui) {
+        Polygon P = new Polygon(P1), Q = new Polygon(P2);
+        // Reference point for P
+        Point2D.Double x = P.getPoints().get(0);
+        x = new Point2D.Double(x.x, x.y);
+        // Reference point for Q
+        Point2D.Double y = Q.getPoints().get(0);
+        y = new Point2D.Double(y.x, y.y);
+
+        // Normalize polygons to the origin
+        P.traslate(-x.x, -x.y);
+        Q.traslate(-y.x, -y.y);
+
+        int i = -1, j = -1;
+        double max = 0, min = Double.MAX_VALUE;
+        for (int k = 0; k < P1.getPointsNumber(); k++) {
+            Point2D.Double p = P1.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int pMin = j, pMax = i;
+
+        i = -1;
+        j = -1;
+        max = 0;
+        min = Double.MAX_VALUE;
+        for (int k = 0; k < P2.getPointsNumber(); k++) {
+            Point2D.Double p = P2.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int qMin = j, qMax = i;
+
+        // Left shadow of P
+        List<Point2D.Double> A = P.getPoints().subList(pMin, pMax + 1);
+        //gui.addShape(new Polygon(A));
+        // Right shadow of Q (inverted)
+        List<Point2D.Double> B = new ArrayList<>();
+        // System.out.println("" + B + qMin + qMax);
+        for (int k = qMax; k < Q.getPointsNumber(); k++) {
+            B.add(Q.getPoints().get(k));
+        }
+        for (int k = 0; k <= qMin; k++) {
+            B.add(Q.getPoints().get(k));
+        }
+        for (Point2D.Double p : B) {
+            p.setLocation(-p.x, -p.y);
+        }
+        // gui.addShape(new Polygon(B));
+        // z = y - x   <- the point to test the shadows' convolution against
+        Point2D.Double z = new Point2D.Double(y.x - x.x, y.y - x.y);
+        gui.addVector(z);
+        //   gui.addShape(MinkowskiSum.minkowskiSumConvex(new Polygon(A), new Polygon(B)));
+
+        return guibasStolfi(new Polygon(A), new Polygon(B), z, gui);
+    }
+
     /**
      * Given two left shadows A and B, discriminate w agains A*B Time O(log n)
      * See "Ruler, Compass and Computer" (Guibas & Stolfi)
@@ -81,7 +181,7 @@ public class CollisionDetection {
      * @param w point
      * @return pen amount
      */
-    public double guibasStolfi(Polygon A, Polygon B, Point2D.Double w) {
+    public static double guibasStolfi(Polygon A, Polygon B, Point2D.Double w, GeomGUI gui) {
         // endpoints
         Point2D.Double a1 = A.getPoints().get(0),
                 a2 = A.getPoints().get(A.getPoints().size() - 1),
@@ -91,6 +191,8 @@ public class CollisionDetection {
         while (A.getPointsNumber() > 1 && B.getPointsNumber() > 1) {
             // Median point indexes
             int i = A.getPoints().size() / 2, j = B.getPoints().size() / 2;
+            System.out.println("Median edges: " + A.getPoints().get(i) + "-" + A.getPoints().get(i + 1) + ", "
+                    + B.getPoints().get(j) + "-" + B.getPoints().get(j + 1));
             // Check if the segments starting from i and j are in slope order
             if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
                     < Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
@@ -105,13 +207,18 @@ public class CollisionDetection {
             // Calculate the displacement of f in the chain D (Al*Bl - f - g - Ah*Bh)
             double f1X = A.getPoints().get(i).x + B.getPoints().get(j).x,
                     f1Y = A.getPoints().get(i).y + B.getPoints().get(j).y;
-            double f2X = f1X + A.getPoints().get(i + 1).x,
-                    f2Y = f1Y + A.getPoints().get(i + 1).y;
+          //  gui.addPoint(new Point2D.Double(f1X, f1Y));
+            double f2X = f1X + (A.getPoints().get(i + 1).x - A.getPoints().get(i).x),
+                    f2Y = f1Y + (A.getPoints().get(i + 1).y - A.getPoints().get(i).y);
+           // gui.addPoint(new Point2D.Double(f2X, f2Y));
             // g1 == f2
-            double g2X = f2X + B.getPoints().get(j + 1).x,
-                    g2Y = f2Y + B.getPoints().get(j + 1).y;
+            double g2X = f2X + (B.getPoints().get(j + 1).x - B.getPoints().get(j).x),
+                    g2Y = f2Y + (B.getPoints().get(j + 1).y - B.getPoints().get(j).y);
+           // gui.addPoint(new Point2D.Double(g2X, g2Y));
             Line lineF = new Line(f1X, f1Y, f2X, f2Y),
                     lineG = new Line(f2X, f2Y, g2X, g2Y);
+          //  gui.addLine(lineG);
+
             Position testF = lineF.testAgainst(w),
                     testG = lineG.testAgainst(w);
             if (w.y > g2Y

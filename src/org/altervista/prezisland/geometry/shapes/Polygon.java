@@ -52,6 +52,14 @@ public class Polygon {
         points = new ArrayList<>(pts);
         center = calculateCenter();
     }
+    
+    public Polygon(Polygon p){
+        points = new ArrayList<>();
+        for(Point2D.Double pp : p.getPoints()){
+            points.add(new Point2D.Double(pp.x, pp.y));
+        }
+        center = calculateCenter();
+    }
 
     protected Polygon(Collection<Point2D.Double> pts, Point2D.Double ctr) {
         points = new ArrayList<>(pts);
@@ -65,7 +73,8 @@ public class Polygon {
          for(Point2D p : points){
          System.out.print(p+";");
          }*/
-    }
+    }   
+    
 
     /**
      * Calculates the center of this generic Shape by enclosing it in a bounding

@@ -53,14 +53,14 @@ public class MinkowskiSum {
 
         minkowskiSumConvex_checkInput(pts1);
         minkowskiSumConvex_checkInput(pts2);
-        for (Point2D.Double p : pts1) {
+     /*   for (Point2D.Double p : pts1) {
             System.out.print("(" + p.x + "," + p.y + ");");
         }
         System.out.println();
         for (Point2D.Double p : pts2) {
             System.out.print("(" + p.x + "," + p.y + ");");
         }
-        System.out.println();
+        System.out.println();*/
 
         /*
          Algorithm from "Computational Geometry, Algorithms and Applications",

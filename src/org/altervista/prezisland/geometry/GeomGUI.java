@@ -46,6 +46,8 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     private Point2D.Double origin;
     private final LinkedList<Polygon> shapes;
     private final LinkedList<Point2D.Double> points;
+    private final LinkedList<Point2D.Double> vectors;
+    private final LinkedList<Line> lines;
 
     /**
      * Creates new form GeomGUI
@@ -56,7 +58,9 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         activePoly = null;
         points = new LinkedList<>();
         origin = new Point2D.Double(0, drawPanel.getHeight());
-      //  controlsPanel.setVisible(false);
+        vectors = new LinkedList<>();
+        lines = new LinkedList<>();
+        //  controlsPanel.setVisible(false);
     }
 
     public Graphics2D getDrawPanelGraphics() {
@@ -65,20 +69,26 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     @Override
     public void paint(Graphics g) {
-        System.out.println("window size: " + getWidth() + "," + getHeight());
-        System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());
-        origin.setLocation(drawPanel.getLocation().getX(), drawPanel.getHeight());
-        System.out.println("origin: " + origin);
+        /*System.out.println("window size: " + getWidth() + "," + getHeight());
+         System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());*/
+        origin.setLocation(drawPanel.getLocation().getX() + 100, drawPanel.getHeight() - 100);
+        // System.out.println("origin: " + origin);
         g.clearRect(0, 0, this.getWidth(), getHeight());
         this.paintComponents(g);
         drawGrid(drawPanel.getGraphics());
+        for (Point2D.Double p : vectors) {
+            drawVector(drawPanel.getGraphics(), (int) p.x, (int) p.y);
+        }
+        for (Line l : lines) {
+            drawLine(l, drawPanel.getGraphics());
+        }
         for (Polygon s : shapes) {
             drawShape(s, drawPanel.getGraphics());
         }
         for (Point2D.Double p : points) {
             drawPoint(p, drawPanel.getGraphics());
         }
-        drawOrigin();
+        // drawOrigin();
     }
 
     public void addShape(Polygon s) {
@@ -87,6 +97,14 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     public void addPoint(Point2D.Double p) {
         points.add(p);
+    }
+
+    public void addVector(Point2D.Double p) {
+        vectors.add(p);
+    }
+
+    public void addLine(Line l) {
+        lines.add(l);
     }
 
     private CartesianVector getPenetrationVector(Polygon s1, Polygon s2) {
@@ -248,6 +266,17 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         g.setColor(cc);
     }
 
+    private void drawLine(Line l, Graphics g) {
+        int maxX = 500, minX = -100;
+        Color c = g.getColor();
+        g.setColor(Color.GREEN);
+   /*     System.out.println("origin: " + origin);
+        System.out.println("draw: " + (minX) + "," + normalizeY(l.calculateY(minX)) + " - " + (maxX) + "," + normalizeY(l.calculateY(maxX)));*/
+        g.drawLine((int)normalizeX(minX), (int) normalizeY(l.calculateY(minX)), 
+                (int)normalizeX(maxX), (int) normalizeY(l.calculateY(maxX)));
+        g.setColor(c);
+    }
+
     private void drawGrid(Graphics g) {
         /*   g.setColor(Color.lightGray);
          for (int i = 0; i < drawPanel.getWidth(); i += 50) {
@@ -298,9 +327,37 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         }
     }
 
+    private void drawVector(Graphics g, int x, int y) {
+        int vectTipLen = 5;
+        Point2D.Double p = normalizePoint(new Point2D.Double(x, y));
+        g.setColor(Color.red);
+        g.drawLine((int) origin.x, (int) origin.y, (int) p.x, (int) p.y);
+        /*if (p.x < x) {
+         g.drawLine(x, y, x - vectTipLen, y - vectTipLen);
+         g.drawLine(x, y, x - vectTipLen, y + vectTipLen);
+         } else if (p.x > x) {
+         g.drawLine(x, y, x + vectTipLen, y - vectTipLen);
+         g.drawLine(x, y, x + vectTipLen, y + vectTipLen);
+         } else if (p.y < y) {
+         g.drawLine(x, y, x + vectTipLen, y - vectTipLen);
+         g.drawLine(x, y, x - vectTipLen, y - vectTipLen);
+         } else {
+         g.drawLine(x, y, x - vectTipLen, y + vectTipLen);
+         g.drawLine(x, y, x + vectTipLen, y + vectTipLen);
+         }*/
+    }
+
     private Point2D.Double normalizePoint(final Point2D.Double p) {
-        double pY = origin.y - p.y;
-        return new Point2D.Double(p.x, pY);
+        double pX = origin.x + p.x, pY = origin.y - p.y;
+        return new Point2D.Double(pX, pY);
+    }
+
+    private double normalizeY(double y) {
+        return origin.y - y;
+    }
+    
+    private double normalizeX(double x) {
+        return origin.x + x;
     }
 
     /**

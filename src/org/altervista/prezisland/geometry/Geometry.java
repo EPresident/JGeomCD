@@ -26,7 +26,7 @@ package org.altervista.prezisland.geometry;
 import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.List;
-import org.altervista.prezisland.geometry.algorithms.MinkowskiSum;
+import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 import org.altervista.prezisland.geometry.shapes.AABB;
 
 /**
@@ -36,50 +36,25 @@ import org.altervista.prezisland.geometry.shapes.AABB;
 public final class Geometry {
 
     private final GeomGUI gui;
-    private static final Polygon RECTANGLE1 = new AABB(200, 200, 200, 100),
-            RECTANGLE2 = new AABB(400, 220, 100, 200),
-            RECTANGLE3 = new AABB(300, 220, 100, 200),
-            RECTANGLE4 = new AABB(300, 60, 100, 200),
-            RECTANGLE5 = new AABB(300, 320, 100, 200),
-            RECTANGLE6 = new AABB(100, 220, 100, 200),
-            TRIANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(300, 100),
-                new Point2D.Double(100, 200), new Point2D.Double(250, 300)}),
-            /*TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 100),
-             new Point2D.Double(100, 300), new Point2D.Double(200, 200)}),*/
-            TRIANGLE2 = new Polygon(new Point2D.Double[]{new Point2D.Double(10, 30),
-                new Point2D.Double(10, 10), new Point2D.Double(20, 20)}),
-            /* TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(100, 200),
-             new Point2D.Double(200, 300), new Point2D.Double(200, 100)});*/
-            RECTANGLE7 = new Polygon(new Point2D.Double[]{new Point2D.Double(30, 30),
-                new Point2D.Double(60, 30), new Point2D.Double(60, 60), new Point2D.Double(30, 60)}),
-            TRIANGLE3 = new Polygon(new Point2D.Double[]{new Point2D.Double(20, 10),
-                new Point2D.Double(20, 30), new Point2D.Double(10, 20)});
+    private static final Polygon RECTANGLE1 = new AABB(200, 200, 200, 100);
 
     private Geometry() {
         gui = new GeomGUI();
         gui.setVisible(true);
-        /*gui.addShape(RECTANGLE1);
-         gui.addShape(RECTANGLE6);*/
-
+        
         // Convolution test
-        //     gui.addShape(RECTANGLE1);
-        //gui.addShape(TRIANGLE1);
-        // gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE1, RECTANGLE2));
-    /*    gui.addShape(TRIANGLE2);
-         System.out.println("tr2 "+TRIANGLE2.getCenter());
-         gui.addShape(RECTANGLE7);
-         System.out.println("r7 "+RECTANGLE7.getCenter());
-         gui.addShape(RECTANGLE1);
-         System.out.println("r1 "+RECTANGLE1.getCenter());
-         gui.addShape(MinkowskiSum.minkowskiSumConvex(TRIANGLE2, RECTANGLE7));*/
-        // Convex Hull test
-       /* gui.addShape(new Polygon(ConvexHull.grahamConvexHull(Arrays.asList(
-         new Point2D.Double[]{new Point2D.Double(100, 100),
-         new Point2D.Double(100, 300), new Point2D.Double(300, 300),
-         new Point2D.Double(300, 100), new Point2D.Double(200, 150)}))));*/
-        gui.addShape(new Polygon(new Point2D.Double[]{new Point2D.Double(200, 100),
-            new Point2D.Double(300, 100), new Point2D.Double(350, 200),
-            new Point2D.Double(250, 250), new Point2D.Double(150, 200)}));
+        
+        Polygon p1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
+            new Point2D.Double(50, 50), new Point2D.Double(0, 100)});
+        p1.traslate(100, 100);
+        Polygon p2 = new Polygon(new Point2D.Double[]{
+            new Point2D.Double(50, 0), new Point2D.Double(50, 100),new Point2D.Double(0, 50)});
+        p2.traslate(100, 100);
+        gui.addShape(p1);
+        gui.addShape(p2);
+      //  gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
+        
+        System.out.println("Result: "+CollisionDetection.getGuiPenAm(p1, p2, gui));
     }
 
     public static void main(String[] args) {

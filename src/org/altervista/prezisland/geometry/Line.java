@@ -59,11 +59,13 @@ public class Line {
     }
 
     public Line(double p1X, double p1Y, double p2X, double p2Y) {
+        System.out.println("Creating line ("+p1X+","+p1Y+")-("+p2X+","+p2Y+")");
         a = p2X - p1X;
         b = p1Y - p2Y;
         c = p1Y * (p1X - p2X) + p1X * (p2Y - p1Y);
         if (a == 0 && b == 0) {
-            throw new RuntimeException("Points are equal! Invalid Line.");
+            throw new RuntimeException("Points ("+p1X+","+p1Y+") and "
+                    + "("+p2X+","+p2Y+") are equal! Invalid Line.");
         }
         slope = (-a)/b;
         yIntercept = (-c)/b;
@@ -141,6 +143,22 @@ public class Line {
 
     public double getC() {
         return c;
+    }
+    
+    public double calculateY(double x){
+        if(a!=0 && b!=0){
+            System.out.println(x+"*"+slope+"+"+yIntercept+"="+((x*slope)+yIntercept));
+            return (x*slope)+yIntercept;
+        }
+        throw new RuntimeException("Cannot calculate Y of a non oblique line!");
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder("Line: ");
+        sb.append(a).append("y + ").append(b).append("x + ").append(c).append(" = 0 , ")
+                .append("y = ").append(slope).append("x + ").append(yIntercept);
+        return sb.toString();
     }
 
 }
