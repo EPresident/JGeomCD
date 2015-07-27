@@ -26,7 +26,7 @@ package org.altervista.prezisland.geometry;
 import java.awt.geom.Point2D;
 
 /**
- * Class representing an infinite, continuous line. a*y + b*x + c = 0
+ * Class representing an infinite, continuous line. a*x + b*y + c = 0
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
@@ -59,16 +59,16 @@ public class Line {
     }
 
     public Line(double p1X, double p1Y, double p2X, double p2Y) {
-        System.out.println("Creating line ("+p1X+","+p1Y+")-("+p2X+","+p2Y+")");
-        a = p2X - p1X;
-        b = p1Y - p2Y;
+        //Equation: a*x + b*y + c = 0
+        a = p1Y - p2Y;
+        b = p2X - p1X;
         c = p1Y * (p1X - p2X) + p1X * (p2Y - p1Y);
         if (a == 0 && b == 0) {
-            throw new RuntimeException("Points ("+p1X+","+p1Y+") and "
-                    + "("+p2X+","+p2Y+") are equal! Invalid Line.");
+            throw new RuntimeException("Points (" + p1X + "," + p1Y + ") and "
+                    + "(" + p2X + "," + p2Y + ") are equal! Invalid Line.");
         }
-        slope = (-a)/b;
-        yIntercept = (-c)/b;
+        slope = (-a) / b;
+        yIntercept = (-c) / b;
         /* if (p1X != p2X) {
          if (p1Y != p2Y) {
          // Oblique line
@@ -97,31 +97,79 @@ public class Line {
     public Position testAgainst(Point2D.Double p) {
         if (a == 0) {
             // Vertical line
-            if(p.x < - (c/b)){
+            if (p.x < -(c / b)) {
                 return Position.LEFT;
-            }if(p.x > - (c/b)){
+            }
+            if (p.x > -(c / b)) {
                 return Position.RIGHT;
-            }else{
+            } else {
                 return Position.COLLIDES;
             }
         } else if (b == 0) {
             // Horizontal line
-            if(p.y < - (c/a)){
+            if (p.y < -(c / a)) {
                 return Position.RIGHT;
-            }if(p.y > - (c/a)){
+            }
+            if (p.y > -(c / a)) {
                 return Position.LEFT;
-            }else{
+            } else {
                 return Position.COLLIDES;
             }
         } else {
             // Oblique line
-            if(p.y > slope * p.x + yIntercept){
+            if (p.y > slope * p.x + yIntercept) {
                 return Position.RIGHT;
-            }else  if(p.y < slope * p.x + yIntercept){
+            } else if (p.y < slope * p.x + yIntercept) {
                 return Position.LEFT;
-            }else{
+            } else {
                 return Position.COLLIDES;
             }
+        }
+    }
+
+    public Position testAgainstDebug(Point2D.Double p) {
+        if (a == 0) {
+            // Vertical line
+            if (p.x < -(c / b)) {
+                return Position.LEFT;
+            }
+            if (p.x > -(c / b)) {
+                return Position.RIGHT;
+            } else {
+                return Position.COLLIDES;
+            }
+        } else if (b == 0) {
+            // Horizontal line
+            if (p.y < -(c / a)) {
+                return Position.RIGHT;
+            }
+            if (p.y > -(c / a)) {
+                return Position.LEFT;
+            } else {
+                return Position.COLLIDES;
+            }
+        } else {
+            // Oblique line
+            System.out.println("p.y: " + p.y + "   y:" + (slope * p.x + yIntercept));
+            if (slope < 0) {
+                if (p.y > slope * p.x + yIntercept) {
+                    return Position.RIGHT;
+                } else if (p.y < slope * p.x + yIntercept) {
+                    return Position.LEFT;
+                } else {
+                    return Position.COLLIDES;
+                }
+            }else{
+                // Slope > 0
+                if (p.y < slope * p.x + yIntercept) {
+                    return Position.RIGHT;
+                } else if (p.y > slope * p.x + yIntercept) {
+                    return Position.LEFT;
+                } else {
+                    return Position.COLLIDES;
+                }
+            }
+
         }
     }
 
@@ -144,17 +192,17 @@ public class Line {
     public double getC() {
         return c;
     }
-    
-    public double calculateY(double x){
-        if(a!=0 && b!=0){
-            System.out.println(x+"*"+slope+"+"+yIntercept+"="+((x*slope)+yIntercept));
-            return (x*slope)+yIntercept;
+
+    public double calculateY(double x) {
+        if (a != 0 && b != 0) {
+            System.out.println(x + "*" + slope + "+" + yIntercept + "=" + ((x * slope) + yIntercept));
+            return (x * slope) + yIntercept;
         }
         throw new RuntimeException("Cannot calculate Y of a non oblique line!");
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder("Line: ");
         sb.append(a).append("y + ").append(b).append("x + ").append(c).append(" = 0 , ")
                 .append("y = ").append(slope).append("x + ").append(yIntercept);

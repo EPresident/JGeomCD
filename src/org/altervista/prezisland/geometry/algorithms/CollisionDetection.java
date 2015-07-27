@@ -191,11 +191,21 @@ public class CollisionDetection {
         while (A.getPointsNumber() > 1 && B.getPointsNumber() > 1) {
             // Median point indexes
             int i = A.getPoints().size() / 2, j = B.getPoints().size() / 2;
-            System.out.println("Median edges: " + A.getPoints().get(i) + "-" + A.getPoints().get(i + 1) + ", "
-                    + B.getPoints().get(j) + "-" + B.getPoints().get(j + 1));
+            // Make sure not to go out of bounds
+            if (i == A.getPointsNumber() - 1) {
+                i--;
+            }
+            if (j == B.getPointsNumber() - 1) {
+                j--;
+            }
+       /*     System.out.println("Median edges: " + A.getPoints().get(i) + "-" + A.getPoints().get(i + 1) + ", "
+                    + B.getPoints().get(j) + "-" + B.getPoints().get(j + 1));*/
+            System.out.println("Sizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
             // Check if the segments starting from i and j are in slope order
+            System.out.println("Pre Angles: " + Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
+                    + "," + Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1)));
             if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
-                    < Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
+                    > Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
                 int k = i;
                 i = j;
                 j = k;
@@ -207,41 +217,61 @@ public class CollisionDetection {
             // Calculate the displacement of f in the chain D (Al*Bl - f - g - Ah*Bh)
             double f1X = A.getPoints().get(i).x + B.getPoints().get(j).x,
                     f1Y = A.getPoints().get(i).y + B.getPoints().get(j).y;
-          //  gui.addPoint(new Point2D.Double(f1X, f1Y));
+
             double f2X = f1X + (A.getPoints().get(i + 1).x - A.getPoints().get(i).x),
                     f2Y = f1Y + (A.getPoints().get(i + 1).y - A.getPoints().get(i).y);
-           // gui.addPoint(new Point2D.Double(f2X, f2Y));
+
             // g1 == f2
             double g2X = f2X + (B.getPoints().get(j + 1).x - B.getPoints().get(j).x),
                     g2Y = f2Y + (B.getPoints().get(j + 1).y - B.getPoints().get(j).y);
-           // gui.addPoint(new Point2D.Double(g2X, g2Y));
+
             Line lineF = new Line(f1X, f1Y, f2X, f2Y),
                     lineG = new Line(f2X, f2Y, g2X, g2Y);
-          //  gui.addLine(lineG);
 
-            Position testF = lineF.testAgainst(w),
+            gui.clearPoints();
+            gui.addPoint(new Point2D.Double(f1X, f1Y));
+            gui.addPoint(new Point2D.Double(f2X, f2Y));
+            gui.addPoint(new Point2D.Double(g2X, g2Y));
+            System.out.println("Angles: " + Geometry.getNormalizedAngle(new Point2D.Double(f1X, f1Y), new Point2D.Double(f2X, f2Y))
+                    + "," + Geometry.getNormalizedAngle(new Point2D.Double(f2X, f2Y), new Point2D.Double(g2X, g2Y)));
+            System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
+            System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);
+            System.out.println("lineF: "+lineF);
+            System.out.println("lineG: "+lineG);
+            System.out.println("w:" + w);
+          /*   gui.clearLines();
+             gui.addLine(lineF);
+             gui.addLine(lineG);*/
+             
+
+            Position testF = lineF.testAgainstDebug(w),
                     testG = lineG.testAgainst(w);
+            System.out.println("tests: "+testF+","+testG);
             if (w.y > g2Y
                     || (testF == RIGHT && testG == RIGHT && w.y > f2Y)) {
                 // ABOVE
+                System.out.println("ABOVE");
                 // Drop Al and f
                 A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
             } else if (w.y < f1Y
                     || (testF == RIGHT && testG == RIGHT && w.y < f2Y)) {
                 // BELOW
+                System.out.println("BELOW");
                 // Drop Bh and g
                 B = new Polygon(B.getPoints().subList(0, j + 1));
             } else if (testF == RIGHT && testG == RIGHT && w.y == f2Y) {
                 // IN BETWEEN
+                System.out.println("BETWEEN");
                 // below/above sans g/f ?
-                B = new Polygon(B.getPoints().subList(0, j + 2));
-                System.out.println("Warning: in between.");
+                B = new Polygon(B.getPoints().subList(0, j + 1));
             } else if ((testF == LEFT || testF == COLLIDES)
                     && (testG == LEFT || testG == COLLIDES)) {
                 // LEFT
+                System.out.println("LEFT");
                 return 1;
             } else {
                 // ???
+                System.out.println("???");
             }
 
         }
@@ -265,13 +295,16 @@ public class CollisionDetection {
             if (pos == LEFT || pos == COLLIDES) {
                 if (w.y >= e1.y && w.y <= e2.y) {
                     // w lies inside
+                    System.out.println("INSIDE SHADOW");
                     return 1;
                 } else if (w.y < e1.y) {
                     // w is below e1
+                    System.out.println("BELOW SHADOW");
                     A = new Polygon(A.getPoints().subList(0, i));
                     i = A.getPointsNumber() / 2;
                 } else {
                     // w is above e2
+                    System.out.println("ABOVE SHADOW");
                     A = new Polygon(A.getPoints().subList(i, A.getPointsNumber()));
                     i = A.getPointsNumber() / 2;
                 }

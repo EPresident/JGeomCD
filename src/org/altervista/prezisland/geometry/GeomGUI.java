@@ -98,6 +98,10 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public void addPoint(Point2D.Double p) {
         points.add(p);
     }
+    
+    public void clearPoints(){
+        points.clear();
+    }
 
     public void addVector(Point2D.Double p) {
         vectors.add(p);
@@ -105,6 +109,10 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     public void addLine(Line l) {
         lines.add(l);
+    }
+    
+    public void clearLines(){
+        lines.clear();
     }
 
     private CartesianVector getPenetrationVector(Polygon s1, Polygon s2) {
