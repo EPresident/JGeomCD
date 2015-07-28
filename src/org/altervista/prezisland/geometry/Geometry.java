@@ -27,6 +27,7 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.List;
 import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
+import org.altervista.prezisland.geometry.algorithms.MinkowskiSum;
 import org.altervista.prezisland.geometry.shapes.AABB;
 
 /**
@@ -46,13 +47,14 @@ public final class Geometry {
         
         Polygon p1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
             new Point2D.Double(50, 50), new Point2D.Double(0, 100)});
-        p1.traslate(49, 100);
+        p1.traslate(150, 201);
         Polygon p2 = new Polygon(new Point2D.Double[]{
             new Point2D.Double(50, 0), new Point2D.Double(50, 100),new Point2D.Double(0, 50)});
         p2.traslate(100, 100);
         gui.addShape(p1);
         gui.addShape(p2);
-      //  gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
+   //     gui.addShape(MinkowskiSum.bruteMinkowskiSumConvex(p1, p2));
+   //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
         
         System.out.println("Result: "+CollisionDetection.getGuiPenAm(p1, p2, gui));
     }
