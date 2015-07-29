@@ -47,7 +47,7 @@ public final class Geometry {
         
         Polygon p1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
             new Point2D.Double(50, 50), new Point2D.Double(0, 100)});
-        p1.traslate(150, 201);
+        p1.traslate(100, 140);
         Polygon p2 = new Polygon(new Point2D.Double[]{
             new Point2D.Double(50, 0), new Point2D.Double(50, 100),new Point2D.Double(0, 50)});
         p2.traslate(100, 100);
@@ -56,7 +56,7 @@ public final class Geometry {
    //     gui.addShape(MinkowskiSum.bruteMinkowskiSumConvex(p1, p2));
    //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
         
-        System.out.println("Result: "+CollisionDetection.getGuiPenAm(p1, p2, gui));
+        System.out.println("Result: "+CollisionDetection.getGuiPenAm(p1, p2, gui)+"-"+CollisionDetection.getGuiPenAm2(p1, p2, gui));
     }
 
     public static void main(String[] args) {

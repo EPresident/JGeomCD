@@ -64,11 +64,22 @@ public class Line {
         b = p2X - p1X;
         c = p1Y * (p1X - p2X) + p1X * (p2Y - p1Y);
         if (a == 0 && b == 0) {
+            // degenerates into a Point
             throw new RuntimeException("Points (" + p1X + "," + p1Y + ") and "
                     + "(" + p2X + "," + p2Y + ") are equal! Invalid Line.");
+        } else if (a == 0) {
+            // Horizontal line
+            slope = 0;
+            yIntercept = -c / b;
+        } else if (b == 0) {
+            // Vertical line
+            slope = INFINITY;
+            yIntercept = INFINITY;
+        } else {
+            slope = (-a) / b;
+            yIntercept = (-c) / b;
         }
-        slope = (-a) / b;
-        yIntercept = (-c) / b;
+
         /* if (p1X != p2X) {
          if (p1Y != p2Y) {
          // Oblique line
@@ -96,55 +107,22 @@ public class Line {
 
     public Position testAgainst(Point2D.Double p) {
         if (a == 0) {
-            // Vertical line
-            if (p.x < -(c / b)) {
-                return Position.LEFT;
-            }
-            if (p.x > -(c / b)) {
+            // Horizontal line
+            if (p.y < -(c / b)) {
                 return Position.RIGHT;
+            }
+            if (p.y > -(c / b)) {
+                return Position.LEFT;
             } else {
                 return Position.COLLIDES;
             }
         } else if (b == 0) {
-            // Horizontal line
-            if (p.y < -(c / a)) {
-                return Position.RIGHT;
-            }
-            if (p.y > -(c / a)) {
-                return Position.LEFT;
-            } else {
-                return Position.COLLIDES;
-            }
-        } else {
-            // Oblique line
-            if (p.y > slope * p.x + yIntercept) {
-                return Position.RIGHT;
-            } else if (p.y < slope * p.x + yIntercept) {
-                return Position.LEFT;
-            } else {
-                return Position.COLLIDES;
-            }
-        }
-    }
-
-    public Position testAgainstDebug(Point2D.Double p) {
-        if (a == 0) {
             // Vertical line
-            if (p.x < -(c / b)) {
+            if (p.x < -(c / a)) {
                 return Position.LEFT;
             }
-            if (p.x > -(c / b)) {
+            if (p.x > -(c / a)) {
                 return Position.RIGHT;
-            } else {
-                return Position.COLLIDES;
-            }
-        } else if (b == 0) {
-            // Horizontal line
-            if (p.y < -(c / a)) {
-                return Position.RIGHT;
-            }
-            if (p.y > -(c / a)) {
-                return Position.LEFT;
             } else {
                 return Position.COLLIDES;
             }
@@ -159,7 +137,7 @@ public class Line {
                 } else {
                     return Position.COLLIDES;
                 }
-            }else{
+            } else {
                 // Slope > 0
                 if (p.y < slope * p.x + yIntercept) {
                     return Position.RIGHT;
@@ -169,7 +147,6 @@ public class Line {
                     return Position.COLLIDES;
                 }
             }
-
         }
     }
 

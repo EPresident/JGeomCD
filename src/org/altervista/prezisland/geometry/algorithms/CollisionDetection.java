@@ -112,10 +112,17 @@ public class CollisionDetection {
         Point2D.Double y = Q.getPoints().get(0);
         y = new Point2D.Double(y.x, y.y);
 
+        /*gui.addShape(P);
+         gui.addShape(Q);
+         gui.addVector(x);
+         gui.addVector(y);
+         throw new RuntimeException();*/
         // Normalize polygons to the origin
         P.traslate(-x.x, -x.y);
         Q.traslate(-y.x, -y.y);
 
+        /*  gui.addShape(P);
+         gui.addShape(Q);*/
         int i = -1, j = -1;
         double max = 0, min = Double.MAX_VALUE;
         for (int k = 0; k < P1.getPointsNumber(); k++) {
@@ -150,7 +157,6 @@ public class CollisionDetection {
 
         // Left shadow of P
         List<Point2D.Double> A = P.getPoints().subList(pMin, pMax + 1);
-        //gui.addShape(new Polygon(A));
         // Right shadow of Q (inverted)
         List<Point2D.Double> B = new ArrayList<>();
         // System.out.println("" + B + qMin + qMax);
@@ -163,12 +169,94 @@ public class CollisionDetection {
         for (Point2D.Double p : B) {
             p.setLocation(-p.x, -p.y);
         }
-        // gui.addShape(new Polygon(B));
         // z = y - x   <- the point to test the shadows' convolution against
         Point2D.Double z = new Point2D.Double(y.x - x.x, y.y - x.y);
-        gui.addVector(z);
-        //   gui.addShape(MinkowskiSum.minkowskiSumConvex(new Polygon(A), new Polygon(B)));
+        //Point2D.Double z = new Point2D.Double(x.x - y.x, x.y - y.y);
 
+        /*gui.addShape(new Polygon(A));
+         gui.addShape(new Polygon(B));*/
+        // gui.addVector(z);
+        //gui.addShape(MinkowskiSum.minkowskiSumConvex(new Polygon(A), new Polygon(B)));
+        return guibasStolfi(new Polygon(A), new Polygon(B), z, gui);
+    }
+
+    public static double getGuiPenAm2(Polygon P1, Polygon P2, GeomGUI gui) {
+        System.out.println("\n\n////////////\nPART TWO\n//////////////////////\n\n");
+        Polygon P = new Polygon(P1), Q = new Polygon(P2);
+        // Reference point for P
+        Point2D.Double x = P.getPoints().get(0);
+        x = new Point2D.Double(x.x, x.y);
+        // Reference point for Q
+        Point2D.Double y = Q.getPoints().get(0);
+        y = new Point2D.Double(y.x, y.y);
+
+        /*gui.addShape(P);
+         gui.addShape(Q);
+         gui.addVector(x);
+         gui.addVector(y);
+         throw new RuntimeException();*/
+        // Normalize polygons to the origin
+        P.traslate(-x.x, -x.y);
+        Q.traslate(-y.x, -y.y);
+
+        /*  gui.addShape(P);
+         gui.addShape(Q);*/
+        int i = -1, j = -1;
+        double max = 0, min = Double.MAX_VALUE;
+        for (int k = 0; k < P1.getPointsNumber(); k++) {
+            Point2D.Double p = P1.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int pMin = j, pMax = i;
+
+        i = -1;
+        j = -1;
+        max = 0;
+        min = Double.MAX_VALUE;
+        for (int k = 0; k < P2.getPointsNumber(); k++) {
+            Point2D.Double p = P2.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int qMin = j, qMax = i;
+
+        // Left shadow of Q
+        List<Point2D.Double> B = Q.getPoints().subList(qMin, qMax + 1);
+        // Right shadow of P (inverted)
+        List<Point2D.Double> A = new ArrayList<>();
+        // System.out.println("" + B + qMin + qMax);
+        for (int k = pMax; k < P.getPointsNumber(); k++) {
+            A.add(P.getPoints().get(k));
+        }
+        for (int k = 0; k <= pMin; k++) {
+            A.add(P.getPoints().get(k));
+        }
+        for (Point2D.Double p : A) {
+            p.setLocation(-p.x, -p.y);
+        }
+        // z = y - x   <- the point to test the shadows' convolution against
+        //Point2D.Double z = new Point2D.Double(y.x - x.x, y.y - x.y);
+        //Point2D.Double z = new Point2D.Double(Math.abs(y.x - x.x), Math.abs(y.y - x.y));
+        Point2D.Double z = new Point2D.Double(x.x - y.x, x.y - y.y);
+
+        gui.addShape(new Polygon(A));
+        gui.addShape(new Polygon(B));
+        gui.addVector(z);
+       // gui.addShape(MinkowskiSum.minkowskiSumConvex(new Polygon(A), new Polygon(B)));
+       // throw new RuntimeException();
         return guibasStolfi(new Polygon(A), new Polygon(B), z, gui);
     }
 
@@ -228,10 +316,6 @@ public class CollisionDetection {
             Line lineF = new Line(f1X, f1Y, f2X, f2Y),
                     lineG = new Line(f2X, f2Y, g2X, g2Y);
 
-            gui.clearPoints();
-            gui.addPoint(new Point2D.Double(f1X, f1Y));
-            gui.addPoint(new Point2D.Double(f2X, f2Y));
-            gui.addPoint(new Point2D.Double(g2X, g2Y));
             System.out.println("Angles: " + Geometry.getNormalizedAngle(new Point2D.Double(f1X, f1Y), new Point2D.Double(f2X, f2Y))
                     + "," + Geometry.getNormalizedAngle(new Point2D.Double(f2X, f2Y), new Point2D.Double(g2X, g2Y)));
             System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
@@ -243,11 +327,11 @@ public class CollisionDetection {
              gui.addLine(lineF);
              gui.addLine(lineG);*/
 
-            Position testF = lineF.testAgainstDebug(w),
-                    testG = lineG.testAgainstDebug(w);
+            Position testF = lineF.testAgainst(w),
+                    testG = lineG.testAgainst(w);
             System.out.println("tests: " + testF + "," + testG);
             if (w.y > g2Y
-                    || (/*testF == RIGHT &&*/ testG == RIGHT && w.y > f2Y)) {
+                    || (/*testF == RIGHT &&*/testG == RIGHT && w.y > f2Y)) {
                 // ABOVE
                 System.out.println("ABOVE");
                 // Drop Al and f
@@ -279,30 +363,38 @@ public class CollisionDetection {
         // One shadow is reduced to one vertex v, check the other one against w-v
         if (A.getPointsNumber() == 1) {
             w.setLocation(w.x - A.getPoints().get(0).x, w.y - A.getPoints().get(0).y);
-            
+            A = B;
         } else if (B.getPointsNumber() == 1) {
             w.setLocation(w.x - B.getPoints().get(0).x, w.y - B.getPoints().get(0).y);
-            A = B;
         } else {
             throw new RuntimeException("Impossible? Shadows not reduced to one vertex.");
         }
 
         // Binary search in the remaining shadow
         int i = A.getPointsNumber() / 2;
+        System.out.println("TRYING TO PLACE "+w);
         // Make sure not to go out of bounds        
         while (A.getPointsNumber() >= 2) {
+            System.out.println("size: "+A.getPointsNumber());
             if (i == A.getPointsNumber() - 1) {
                 i--;
             }
+            System.out.println("i: "+i);
             Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
             Line l = new Line(e1, e2);
+            System.out.println("against "+l);
+            System.out.println("with points "+e1+" - "+e2);
             Position pos = l.testAgainst(w);
             if (pos == LEFT || pos == COLLIDES) {
-                if (w.y >= e1.y && w.y <= e2.y) {
+                if (/*(l.getSlope() >= 0) && */w.y >= e1.y && w.y <= e2.y) {
                     // w lies inside
-                    System.out.println("INSIDE SHADOW");
+                    System.out.println("--- > INSIDE SHADOW1");
                     return 1;
-                } else if (w.y < e1.y) {
+                } /*else if ((l.getSlope() < 0) && w.y >= e2.y && w.y <= e1.y) {
+                 // w lies inside
+                 System.out.println("--- > INSIDE SHADOW2");
+                 return 1;
+                 } */ else if (w.y < e1.y) {
                     // w is below e1
                     System.out.println("BELOW SHADOW");
                     A = new Polygon(A.getPoints().subList(0, i));
@@ -310,17 +402,25 @@ public class CollisionDetection {
                 } else {
                     // w is above e2
                     System.out.println("ABOVE SHADOW");
-                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber()));
+                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber()-1));
                     i = A.getPointsNumber() / 2;
                 }
             } else {
                 // w is outside
+                System.out.println("--- >OUTSIDE SHADOW");
                 return 0;
             }
 
         }
 
+        // None of the above cases triggered: point outside of the convolution
+        /*
+        Possible causes: shadows composed only of vertical/horizontal lines
+        */
         return 0;
+        /*System.out.println("???2");
+        throw new RuntimeException("???2");*/
+        //     return 0;
     }
 
 }
