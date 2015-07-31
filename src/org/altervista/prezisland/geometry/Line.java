@@ -26,7 +26,8 @@ package org.altervista.prezisland.geometry;
 import java.awt.geom.Point2D;
 
 /**
- * Class representing an infinite, continuous line. a*x + b*y + c = 0
+ * Class representing an infinite, continuous line. Equation: a*x + b*y + c = 0,
+ * y = slope*x + yIntercept
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
@@ -44,17 +45,6 @@ public class Line {
     };
 
     public Line(Point2D.Double p1, Point2D.Double p2) {
-        /*  if (p1.x != p2.x) {
-         if (p1.y != p2.y) {
-         slope = (p2.y - p1.y) / (p2.x - p1.x);
-         yIntercept = (p2.x * p1.y - p1.x * p2.y) / (p2.x - p1.x);
-         } else {
-         throw new RuntimeException("Points are equal!");
-         }
-         } else {
-         slope = 1;
-         yIntercept = 0;
-         }*/
         this(p1.x, p1.y, p2.x, p2.y);
     }
 
@@ -79,30 +69,6 @@ public class Line {
             slope = (-a) / b;
             yIntercept = (-c) / b;
         }
-
-        /* if (p1X != p2X) {
-         if (p1Y != p2Y) {
-         // Oblique line
-         slope = (p2Y - p1Y) / (p2X - p1X);
-         yIntercept = (p2X * p1Y - p1X * p2Y) / (p2X - p1X);
-         } else {
-         // Horizontal line
-         slope = 0;
-         yIntercept = p1Y;
-         }
-         } else if (p1Y != p2Y) {
-         // Vertical line
-         slope = INFINITY;
-         yIntercept = INFINITY;
-         } else {
-         // Line degenerates into a Point
-         throw new RuntimeException("Points are equal! Invalid Line.");
-         }*/
-    }
-
-    public Line(double m, double q) {
-        this.slope = m;
-        this.yIntercept = q;
     }
 
     public Position testAgainst(Point2D.Double p) {
@@ -150,6 +116,77 @@ public class Line {
         }
     }
 
+    public Point2D.Double testIntersection(Line l) {
+        if (l.isVertical()) {
+            if (this.isVertical()) {
+
+                // Check x value
+                double x = this.calculateX(0);
+                if (x == l.calculateX(0)) {
+                    System.out.println("Warning: intersection is a line.");
+                    return new Point2D.Double(x, 0);
+                }
+            } else if (this.isHorizontal()) {
+                // l vertical, this horizontal
+                // Trivial intersection
+                return new Point2D.Double(-l.c / l.a, -this.c / this.b);
+            } else {
+                // vertical line vs oblique line
+                double x = l.calculateX(0);
+                return new Point2D.Double(x, this.calculateY(x));
+            }
+        } else if (l.isHorizontal()) {
+            if (this.isVertical()) {
+                // l horizontal, this vertical
+                // Trivial intersection
+                return new Point2D.Double(this.calculateX(0), l.calculateY(0));
+            } else if (this.isHorizontal()) {
+                // Both lines horizontal
+                // Check y value
+                double y = this.calculateY(0);
+                if (y == l.calculateY(0)) {
+                    System.out.println("Warning: intersection is a line.");
+                    return new Point2D.Double(0, y);
+                }
+            } else {
+                // horizontal line vs oblique line
+                double y = l.calculateY(0);
+                return new Point2D.Double(this.calculateX(y), y);
+            }
+        } else {
+            // l is oblique
+            if (this.isVertical()) {
+                // vertical line vs oblique line
+                double x = this.calculateX(0);
+                return new Point2D.Double(x, l.calculateY(x));
+            } else if (this.isHorizontal()) {
+                // horizontal line vs oblique line
+                double y = this.calculateY(0);
+                return new Point2D.Double(l.calculateX(y), y);
+            } else {
+                // Both lines are oblique
+                if (this.slope == l.slope) {
+                    // Lines are parallel
+                    if (this.yIntercept == l.yIntercept) {
+                        // Lines are equal
+                        System.out.println("Warning: intersection is a line.");
+                        return new Point2D.Double(0, this.calculateY(0));
+                    }
+                } else {
+                    /*
+                     Line l1: y = m*x + q
+                     Line l2: y = n*x + r
+                     Intersection x: m*x + q = n*x + r
+                                    --> x = (r - q)/(m-n)
+                     */
+                    double x = (l.yIntercept - this.yIntercept) / (this.slope - l.slope);
+                    return new Point2D.Double(x, this.calculateY(x));
+                }
+            }
+        }
+        return null;
+    }
+
     public double getSlope() {
         return slope;
     }
@@ -170,18 +207,51 @@ public class Line {
         return c;
     }
 
+    public boolean isVertical() {
+        return b == 0;
+    }
+
+    public boolean isHorizontal() {
+        return a == 0;
+    }
+
+    public boolean isOblique() {
+        return a != 0 && b != 0;
+    }
+
     public double calculateY(double x) {
         if (a != 0 && b != 0) {
-            System.out.println(x + "*" + slope + "+" + yIntercept + "=" + ((x * slope) + yIntercept));
             return (x * slope) + yIntercept;
+        } else if (a == 0) {
+            return -c / b;
         }
-        throw new RuntimeException("Cannot calculate Y of a non oblique line!");
+        throw new RuntimeException("Cannot calculate Y of a vertical line!");
+    }
+
+    public double calculateX(double y) {
+        if (a != 0 && b != 0) {
+            return (-b / a) * y + (-c / a);
+        } else if (b == 0) {
+            return -c / a;
+        }
+        throw new RuntimeException("Cannot calculate Y of an horizontal line!");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Line) {
+            Line l = (Line) o;
+            if (this.a == l.a && this.b == l.b && this.c == l.c) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Line: ");
-        sb.append(a).append("y + ").append(b).append("x + ").append(c).append(" = 0 , ")
+        sb.append(a).append("x + ").append(b).append("y + ").append(c).append(" = 0 , ")
                 .append("y = ").append(slope).append("x + ").append(yIntercept);
         return sb.toString();
     }
