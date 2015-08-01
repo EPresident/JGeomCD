@@ -252,11 +252,11 @@ public class CollisionDetection {
         //Point2D.Double z = new Point2D.Double(Math.abs(y.x - x.x), Math.abs(y.y - x.y));
         Point2D.Double z = new Point2D.Double(x.x - y.x, x.y - y.y);
 
-       /* gui.addShape(new Polygon(A));
-        gui.addShape(new Polygon(B));*/
+        /* gui.addShape(new Polygon(A));
+         gui.addShape(new Polygon(B));*/
         //gui.addVector(z);
-       // gui.addShape(MinkowskiSum.minkowskiSumConvex(new Polygon(A), new Polygon(B)));
-       // throw new RuntimeException();
+        // gui.addShape(MinkowskiSum.minkowskiSumConvex(new Polygon(A), new Polygon(B)));
+        // throw new RuntimeException();
         return guibasStolfi(new Polygon(A), new Polygon(B), z, gui);
     }
 
@@ -327,8 +327,8 @@ public class CollisionDetection {
              gui.addLine(lineF);
              gui.addLine(lineG);*/
 
-            Position testF = lineF.testAgainst(w),
-                    testG = lineG.testAgainst(w);
+            Position testF = (Position)lineF.testAgainst(w),
+                    testG = (Position)lineG.testAgainst(w);
             System.out.println("tests: " + testF + "," + testG);
             if (w.y > g2Y
                     || (/*testF == RIGHT &&*/testG == RIGHT && w.y > f2Y)) {
@@ -372,19 +372,19 @@ public class CollisionDetection {
 
         // Binary search in the remaining shadow
         int i = A.getPointsNumber() / 2;
-        System.out.println("TRYING TO PLACE "+w);
+        System.out.println("TRYING TO PLACE " + w);
         // Make sure not to go out of bounds        
         while (A.getPointsNumber() >= 2) {
-            System.out.println("size: "+A.getPointsNumber());
+            System.out.println("size: " + A.getPointsNumber());
             if (i == A.getPointsNumber() - 1) {
                 i--;
             }
-            System.out.println("i: "+i);
+            System.out.println("i: " + i);
             Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
             Line l = new Line(e1, e2);
-            System.out.println("against "+l);
-            System.out.println("with points "+e1+" - "+e2);
-            Position pos = l.testAgainst(w);
+            System.out.println("against " + l);
+            System.out.println("with points " + e1 + " - " + e2);
+            Position pos = (Position)l.testAgainst(w);
             if (pos == LEFT || pos == COLLIDES) {
                 if (/*(l.getSlope() >= 0) && */w.y >= e1.y && w.y <= e2.y) {
                     // w lies inside
@@ -402,7 +402,7 @@ public class CollisionDetection {
                 } else {
                     // w is above e2
                     System.out.println("ABOVE SHADOW");
-                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber()-1));
+                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
                     i = A.getPointsNumber() / 2;
                 }
             } else {
@@ -415,15 +415,15 @@ public class CollisionDetection {
 
         // None of the above cases triggered: point outside of the convolution
         /*
-        Possible causes: shadows composed only of vertical/horizontal lines
-        */
+         Possible causes: shadows composed only of vertical/horizontal lines
+         */
         return 0;
         /*System.out.println("???2");
-        throw new RuntimeException("???2");*/
+         throw new RuntimeException("???2");*/
         //     return 0;
     }
-    
-    public static double penDepth(Polygon A, Polygon B, Point2D.Double w, GeomGUI gui) {
+
+    public static double penDepth(Polygon A, Polygon B, Point2D.Double w, Line d, GeomGUI gui) {
         // endpoints
         Point2D.Double a1 = A.getPoints().get(0),
                 a2 = A.getPoints().get(A.getPoints().size() - 1),
@@ -481,31 +481,15 @@ public class CollisionDetection {
              gui.addLine(lineF);
              gui.addLine(lineG);*/
 
-            Position testF = lineF.testAgainst(w),
-                    testG = lineG.testAgainst(w);
+            Point2D.Double testF = lineF.testIntersection(d),
+                    testG = lineG.testIntersection(d);
+            // testIntersection() returns a Point or null
             System.out.println("tests: " + testF + "," + testG);
-            if (w.y > g2Y
-                    || (/*testF == RIGHT &&*/testG == RIGHT && w.y > f2Y)) {
-                // ABOVE
-                System.out.println("ABOVE");
-                // Drop Al and f
-                A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
-            } else if (w.y < f1Y
-                    || (testF == RIGHT && /*testG == RIGHT &&*/ w.y < f2Y)) {
-                // BELOW
-                System.out.println("BELOW");
-                // Drop Bh and g
-                B = new Polygon(B.getPoints().subList(0, j + 1));
-            } else if (testF == RIGHT && testG == RIGHT && w.y == f2Y) {
-                // IN BETWEEN
-                System.out.println("BETWEEN");
-                // below/above sans g/f ?
-                B = new Polygon(B.getPoints().subList(0, j + 1));
-            } else if ((testF == LEFT || testF == COLLIDES)
-                    && (testG == LEFT || testG == COLLIDES)) {
-                // LEFT
-                System.out.println("LEFT");
-                return 1;
+            if (testF != null) {
+                if (testF.x < f1X) {
+
+                }
+
             } else {
                 // ???
                 System.out.println("???");
@@ -515,10 +499,13 @@ public class CollisionDetection {
         }
         // End loop
         // One shadow is reduced to one vertex v, check the other one against w-v
-        if (A.getPointsNumber() == 1) {
+
+        if (A.getPointsNumber()
+                == 1) {
             w.setLocation(w.x - A.getPoints().get(0).x, w.y - A.getPoints().get(0).y);
             A = B;
-        } else if (B.getPointsNumber() == 1) {
+        } else if (B.getPointsNumber()
+                == 1) {
             w.setLocation(w.x - B.getPoints().get(0).x, w.y - B.getPoints().get(0).y);
         } else {
             throw new RuntimeException("Impossible? Shadows not reduced to one vertex.");
@@ -526,19 +513,22 @@ public class CollisionDetection {
 
         // Binary search in the remaining shadow
         int i = A.getPointsNumber() / 2;
-        System.out.println("TRYING TO PLACE "+w);
+
+        System.out.println(
+                "TRYING TO PLACE " + w);
         // Make sure not to go out of bounds        
-        while (A.getPointsNumber() >= 2) {
-            System.out.println("size: "+A.getPointsNumber());
+        while (A.getPointsNumber()
+                >= 2) {
+            System.out.println("size: " + A.getPointsNumber());
             if (i == A.getPointsNumber() - 1) {
                 i--;
             }
-            System.out.println("i: "+i);
+            System.out.println("i: " + i);
             Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
             Line l = new Line(e1, e2);
-            System.out.println("against "+l);
-            System.out.println("with points "+e1+" - "+e2);
-            Position pos = l.testAgainst(w);
+            System.out.println("against " + l);
+            System.out.println("with points " + e1 + " - " + e2);
+            Position pos = (Position)l.testAgainst(w);
             if (pos == LEFT || pos == COLLIDES) {
                 if (/*(l.getSlope() >= 0) && */w.y >= e1.y && w.y <= e2.y) {
                     // w lies inside
@@ -556,7 +546,7 @@ public class CollisionDetection {
                 } else {
                     // w is above e2
                     System.out.println("ABOVE SHADOW");
-                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber()-1));
+                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
                     i = A.getPointsNumber() / 2;
                 }
             } else {
@@ -569,11 +559,11 @@ public class CollisionDetection {
 
         // None of the above cases triggered: point outside of the convolution
         /*
-        Possible causes: shadows composed only of vertical/horizontal lines
-        */
+         Possible causes: shadows composed only of vertical/horizontal lines
+         */
         return 0;
         /*System.out.println("???2");
-        throw new RuntimeException("???2");*/
+         throw new RuntimeException("???2");*/
         //     return 0;
     }
 

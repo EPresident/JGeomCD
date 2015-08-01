@@ -27,7 +27,6 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.List;
 import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
-import org.altervista.prezisland.geometry.algorithms.MinkowskiSum;
 import org.altervista.prezisland.geometry.shapes.AABB;
 
 /**

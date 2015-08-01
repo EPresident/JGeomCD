@@ -68,7 +68,7 @@ public class LineTest {
         Line.Position[] expResults = {Line.Position.RIGHT, Line.Position.LEFT,
             Line.Position.LEFT, Line.Position.RIGHT, Line.Position.COLLIDES};
         for (int i = 0; i < ps.length; i++) {
-            Line.Position result = instance.testAgainst(ps[i]);   
+            Line.Position result = (Line.Position)instance.testAgainst(ps[i]);   
             System.out.println("Testing against "+ps[i]);
             assertEquals(expResults[i], result);
         }

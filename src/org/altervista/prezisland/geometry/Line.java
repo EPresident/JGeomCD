@@ -37,7 +37,7 @@ public class Line {
     private double a, b, c;
     public static final double INFINITY = Double.MAX_VALUE;
 
-    public static enum Position {
+    public static enum Position implements RelativePosition{
 
         LEFT, //ABOVE, 
         RIGHT, //BELOW, 
@@ -71,7 +71,7 @@ public class Line {
         }
     }
 
-    public Position testAgainst(Point2D.Double p) {
+    public RelativePosition testAgainst(Point2D.Double p) {
         if (a == 0) {
             // Horizontal line
             if (p.y < -(c / b)) {
