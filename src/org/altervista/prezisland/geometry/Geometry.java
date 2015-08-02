@@ -39,7 +39,11 @@ public final class Geometry {
     private static final Polygon RECTANGLE1 = new AABB(200, 200, 200, 100),
             SQUARE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
                 new Point2D.Double(100, 0), new Point2D.Double(100, 100),
-                new Point2D.Double(0, 100)});
+                new Point2D.Double(0, 100)}),
+            PENTAGON1 = new Polygon(new Point2D.Double[]{
+                new Point2D.Double(0, 0), new Point2D.Double(50, -10),
+                new Point2D.Double(80, 70), new Point2D.Double(50, 100),
+                new Point2D.Double(20, 60)});
 
     ;
 
@@ -48,21 +52,17 @@ public final class Geometry {
         gui.setVisible(true);
 
         // Convolution test
-        Polygon p1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
-            new Point2D.Double(100, 0), new Point2D.Double(100, 100),
-            new Point2D.Double(0, 100)});
-        p1.traslate(-1, 0);
-        Polygon p2 = new Polygon(new Point2D.Double[]{
-            new Point2D.Double(0, 0), new Point2D.Double(50, -10),
-            new Point2D.Double(80, 70), new Point2D.Double(50, 100),
-            new Point2D.Double(20, 60)});
+        Polygon p1 = new Polygon(PENTAGON1);
+        p1.traslate(50, 50);
+        Polygon p2 = new Polygon(SQUARE1.getPoints());
         p2.traslate(100, 100);
         gui.addShape(p1);
         gui.addShape(p2);
         //     gui.addShape(MinkowskiSum.bruteMinkowskiSumConvex(p1, p2));
         //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
-        System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
+        // System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
+        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, gui));
     }
 
     public static void main(String[] args) {

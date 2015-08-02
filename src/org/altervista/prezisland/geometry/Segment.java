@@ -35,18 +35,6 @@ public class Segment extends Line {
             p2 = new Point2D.Double(x1, y1);
             p1 = new Point2D.Double(x2, y2);
         }
-
-        /* if (x1 > x2 && y1 > y2) {
-         p2 = new Point2D.Double(x1, y1);
-         p1 = new Point2D.Double(x2, y2);
-         } else if ((super.isHorizontal() && x1 > x2)
-         || (super.isVertical() && y1 > y2)) {
-         p2 = new Point2D.Double(x1, y1);
-         p1 = new Point2D.Double(x2, y2);
-         } else {
-         p1 = new Point2D.Double(x1, y1);
-         p2 = new Point2D.Double(x2, y2);
-         }*/
     }
 
     public Segment(Point2D.Double p1, Point2D.Double p2) {

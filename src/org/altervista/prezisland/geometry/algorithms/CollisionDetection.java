@@ -25,12 +25,14 @@ package org.altervista.prezisland.geometry.algorithms;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.altervista.prezisland.geometry.GeomGUI;
 import org.altervista.prezisland.geometry.Geometry;
 import org.altervista.prezisland.geometry.Line;
 import org.altervista.prezisland.geometry.Line.Position;
 import static org.altervista.prezisland.geometry.Line.Position.*;
+import org.altervista.prezisland.geometry.Segment;
 import org.altervista.prezisland.geometry.shapes.Polygon;
 
 /**
@@ -49,16 +51,22 @@ public class CollisionDetection {
      } while (l-r>0);
      return null;
      }*/
-    public static double getPenetrationAmount(final Polygon P1, final Polygon P2) {
-        Polygon P = new Polygon(P1.getPoints()), Q = new Polygon(P2.getPoints());
+    public static double getPenetrationAmount(final Polygon P1, final Polygon P2, GeomGUI gui) {
+        // Duplicate polygons to avoid conflicts
+        Polygon P = new Polygon(P1), Q = new Polygon(P2);
         // Reference point for P
         Point2D.Double x = P.getPoints().get(0);
+        x = new Point2D.Double(x.x, x.y);
         // Reference point for Q
         Point2D.Double y = Q.getPoints().get(0);
+        y = new Point2D.Double(y.x, y.y);
 
         // Normalize polygons to the origin
         P.traslate(-x.x, -x.y);
         Q.traslate(-y.x, -y.y);
+        /*  gui.addShape(P);
+         gui.addShape(Q);
+         throw new RuntimeException("stahp");*/
 
         int i = -1, j = -1;
         double max = 0, min = Double.MAX_VALUE;
@@ -93,14 +101,32 @@ public class CollisionDetection {
         int qMin = j, qMax = i;
 
         // Left shadow of P
-        List<Point2D.Double> A = P.getPoints().subList(pMin, pMax + 1);
+        Polygon lsP = getLeftShadow(P, pMax, pMin);
         // Right shadow of Q (inverted)
-        List<Point2D.Double> B = Q.getPoints().subList(qMax, Q.getPointsNumber());
-        B.addAll(B.subList(0, qMin + 1));
-        // z = y - x   <- the point to test the shadows' convolution against
-        Point2D.Double z = new Point2D.Double(y.x - x.x, y.y - x.y);
+        Polygon rsiQ = getRightShadowInv(Q, qMax, qMin);
+        // Left shadow of Q
+        Polygon lsQ = getLeftShadow(Q, qMax, qMin);
+        // Right shadow of P (inverted)
+        Polygon rsiP = getRightShadowInv(P, pMax, pMin);
+        // w = y - x   <- the point to test the shadows' convolution against
+        // y = left shadow reference point
+        // x = right shadow reference point
+        Point2D.Double w1 = new Point2D.Double(y.x - x.x, y.y - x.y);
+        Point2D.Double w2 = new Point2D.Double(x.x - y.x, x.y - y.y);
 
-        return 0;
+        // Test : horizontal direction
+        Line d1 = new Line(w1.x, w1.y, w1.x + 1, w1.x),
+                d2 = new Line(w2.x, w2.y, w2.x + 1, w2.x);
+
+        System.out.println("\n\n --- TEST 1 --- \n\n");
+        double pen1 = penDepth(lsP, rsiQ, w1, d1, gui);
+        System.out.println("\n\n --- TEST 2 --- \n\n");
+        double pen2 = penDepth(lsQ, rsiP, w2, d2, gui);
+        if (pen1 == 0) {
+            return pen2;
+        } else {
+            return pen1;
+        }
     }
 
     public static double getGuiPenAm(Polygon P1, Polygon P2, GeomGUI gui) {
@@ -267,7 +293,7 @@ public class CollisionDetection {
      * @param A left shadow of a convex polygon P
      * @param B left shadow (reversed right shadow of P)
      * @param w point
-     * @return pen amount
+     * @return 0 for no collision, 1 for collision
      */
     public static double guibasStolfi(Polygon A, Polygon B, Point2D.Double w, GeomGUI gui) {
         // endpoints
@@ -327,8 +353,8 @@ public class CollisionDetection {
              gui.addLine(lineF);
              gui.addLine(lineG);*/
 
-            Position testF = (Position)lineF.testAgainst(w),
-                    testG = (Position)lineG.testAgainst(w);
+            Position testF = (Position) lineF.testAgainst(w),
+                    testG = (Position) lineG.testAgainst(w);
             System.out.println("tests: " + testF + "," + testG);
             if (w.y > g2Y
                     || (/*testF == RIGHT &&*/testG == RIGHT && w.y > f2Y)) {
@@ -384,7 +410,7 @@ public class CollisionDetection {
             Line l = new Line(e1, e2);
             System.out.println("against " + l);
             System.out.println("with points " + e1 + " - " + e2);
-            Position pos = (Position)l.testAgainst(w);
+            Position pos = (Position) l.testAgainst(w);
             if (pos == LEFT || pos == COLLIDES) {
                 if (/*(l.getSlope() >= 0) && */w.y >= e1.y && w.y <= e2.y) {
                     // w lies inside
@@ -423,7 +449,28 @@ public class CollisionDetection {
         //     return 0;
     }
 
+    /**
+     * Algorithm to calculate the directional penetration depth between two
+     * convex polygons, based on an algorithm by Guibas and Stolfi.
+     *
+     * @param A Left shadow of a Polygon
+     * @param B Inverted right shadow of a Polygon
+     * @param w Position vector (difference between A and B's position vectors)
+     * @param d Direction of penetration ( as a Line )
+     * @param gui GeomGui
+     * @return Depth of penetration (in pixels)
+     */
     public static double penDepth(Polygon A, Polygon B, Point2D.Double w, Line d, GeomGUI gui) {
+        /*System.out.println("A: " + A.getPoints());
+         System.out.println("B: " + B.getPoints());
+         System.out.println("w: " + w);*/
+       // gui.clearLines();
+       // gui.addLine(d);
+        //    gui.addShape(A);
+        //    gui.addShape(B);
+       // gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        //   gui.addVector(w);
+        // throw new RuntimeException("Stop");
         // endpoints
         Point2D.Double a1 = A.getPoints().get(0),
                 a2 = A.getPoints().get(A.getPoints().size() - 1),
@@ -440,12 +487,8 @@ public class CollisionDetection {
             if (j == B.getPointsNumber() - 1) {
                 j--;
             }
-            /*     System.out.println("Median edges: " + A.getPoints().get(i) + "-" + A.getPoints().get(i + 1) + ", "
-             + B.getPoints().get(j) + "-" + B.getPoints().get(j + 1));*/
-            System.out.println("Sizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
+            System.out.println("\nSizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
             // Check if the segments starting from i and j are in slope order
-            System.out.println("Pre Angles: " + Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
-                    + "," + Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1)));
             if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
                     > Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
                 int k = i;
@@ -469,14 +512,14 @@ public class CollisionDetection {
 
             Line lineF = new Line(f1X, f1Y, f2X, f2Y),
                     lineG = new Line(f2X, f2Y, g2X, g2Y);
+            Segment segF = new Segment(f1X, f1Y, f2X, f2Y),
+                    segG = new Segment(f2X, f2Y, g2X, g2Y);
 
-            System.out.println("Angles: " + Geometry.getNormalizedAngle(new Point2D.Double(f1X, f1Y), new Point2D.Double(f2X, f2Y))
-                    + "," + Geometry.getNormalizedAngle(new Point2D.Double(f2X, f2Y), new Point2D.Double(g2X, g2Y)));
-            System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
+           /*System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
             System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);
             System.out.println("lineF: " + lineF);
             System.out.println("lineG: " + lineG);
-            System.out.println("w:" + w);
+            System.out.println("w:" + w);*/
             /*   gui.clearLines();
              gui.addLine(lineF);
              gui.addLine(lineG);*/
@@ -484,12 +527,36 @@ public class CollisionDetection {
             Point2D.Double testF = lineF.testIntersection(d),
                     testG = lineG.testIntersection(d);
             // testIntersection() returns a Point or null
-            System.out.println("tests: " + testF + "," + testG);
+          //  System.out.println("tests: " + testF + "," + testG);
             if (testF != null) {
-                if (testF.x < f1X) {
-
+                Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
+                System.out.println("posF: " + posF);
+                if (posF == Segment.Position.COLLIDES) {
+                    // GOTCHA!
+              //      gui.addVector(testF);
+                    System.out.println("GOTCHA! "+Geometry.getLength(w, testF));
+                    return Geometry.getLength(w, testF);
+                } else if (posF == Segment.Position.COLLINEAR_BELOW) {
+                    // BELOW
+                    System.out.println("BELOW");
+                    // Drop Bh and g
+                    B = new Polygon(B.getPoints().subList(0, j + 1));
                 }
-
+            }
+            if (testG != null) {
+                Segment.Position posG = (Segment.Position) segG.testAgainst(testG);
+                System.out.println("posG: " + posG);
+                if (posG == Segment.Position.COLLIDES) {
+                    // GOTCHA!
+                  //  gui.addVector(testG);
+                    System.out.println("GOTCHA! "+Geometry.getLength(w, testG));
+                    return Geometry.getLength(w, testG);
+                } else if (posG == Segment.Position.COLLINEAR_ABOVE) {
+                    // ABOVE
+                    System.out.println("ABOVE");
+                    // Drop Al and f
+                    A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
+                }
             } else {
                 // ???
                 System.out.println("???");
@@ -498,73 +565,67 @@ public class CollisionDetection {
 
         }
         // End loop
-        // One shadow is reduced to one vertex v, check the other one against w-v
 
-        if (A.getPointsNumber()
-                == 1) {
-            w.setLocation(w.x - A.getPoints().get(0).x, w.y - A.getPoints().get(0).y);
-            A = B;
-        } else if (B.getPointsNumber()
-                == 1) {
-            w.setLocation(w.x - B.getPoints().get(0).x, w.y - B.getPoints().get(0).y);
-        } else {
-            throw new RuntimeException("Impossible? Shadows not reduced to one vertex.");
-        }
-
-        // Binary search in the remaining shadow
-        int i = A.getPointsNumber() / 2;
-
-        System.out.println(
-                "TRYING TO PLACE " + w);
-        // Make sure not to go out of bounds        
-        while (A.getPointsNumber()
-                >= 2) {
-            System.out.println("size: " + A.getPointsNumber());
-            if (i == A.getPointsNumber() - 1) {
-                i--;
-            }
-            System.out.println("i: " + i);
-            Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
-            Line l = new Line(e1, e2);
-            System.out.println("against " + l);
-            System.out.println("with points " + e1 + " - " + e2);
-            Position pos = (Position)l.testAgainst(w);
-            if (pos == LEFT || pos == COLLIDES) {
-                if (/*(l.getSlope() >= 0) && */w.y >= e1.y && w.y <= e2.y) {
-                    // w lies inside
-                    System.out.println("--- > INSIDE SHADOW1");
-                    return 1;
-                } /*else if ((l.getSlope() < 0) && w.y >= e2.y && w.y <= e1.y) {
-                 // w lies inside
-                 System.out.println("--- > INSIDE SHADOW2");
-                 return 1;
-                 } */ else if (w.y < e1.y) {
-                    // w is below e1
-                    System.out.println("BELOW SHADOW");
-                    A = new Polygon(A.getPoints().subList(0, i));
-                    i = A.getPointsNumber() / 2;
-                } else {
-                    // w is above e2
-                    System.out.println("ABOVE SHADOW");
-                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
-                    i = A.getPointsNumber() / 2;
-                }
-            } else {
-                // w is outside
-                System.out.println("--- >OUTSIDE SHADOW");
-                return 0;
-            }
-
-        }
-
-        // None of the above cases triggered: point outside of the convolution
-        /*
-         Possible causes: shadows composed only of vertical/horizontal lines
-         */
+        // None of the above cases triggered
+        System.out.println("???2");
+        //throw new RuntimeException("???2");
         return 0;
-        /*System.out.println("???2");
-         throw new RuntimeException("???2");*/
-        //     return 0;
+    }
+
+    public static Polygon getLeftShadow(Polygon P, int max, int min) {
+        // use the Polygon constructor to clone the points
+        Polygon P2 = new Polygon(P.getPoints());
+        LinkedList<Point2D.Double> ptsR = new LinkedList<>();
+        List<Point2D.Double> ptsP2 = P2.getPoints();
+
+        ptsR.add(ptsP2.get(min));
+        for (int i = min + 1; i < max + 1; i++) {
+            Point2D.Double p = ptsP2.get(i);
+            // Avoid inserting horizontal lines in the shadow
+            if (ptsR.getLast().y == p.y) {
+                ptsR.removeLast();
+            }
+            ptsR.add(p);
+        }
+        //return new Polygon(P2.getPoints().subList(min, max + 1));
+        return new Polygon(ptsR);
+    }
+
+    public static Polygon getRightShadowInv(Polygon P, int max, int min) {
+        // use the Polygon constructor to clone the points      
+        Polygon P2 = new Polygon(P);
+        /*System.out.println("P2: " + P2.getPoints());
+         System.out.println("min: " + min + ", max: " + max);*/
+        LinkedList<Point2D.Double> ptsR = new LinkedList<>();
+        List<Point2D.Double> ptsP2 = P2.getPoints();
+
+        Point2D.Double pMax = ptsP2.get(max);
+        ptsR.add(new Point2D.Double(-pMax.x, -pMax.y));
+        if (max < ptsP2.size()) {
+            for (int i = max + 1; i < ptsP2.size(); i++) {
+                Point2D.Double p = ptsP2.get(i);
+                p.setLocation(-p.x, -p.y);
+                // Avoid inserting horizontal lines in the shadow
+                if (ptsR.getLast().y == p.y) {
+                    ptsR.removeLast();
+                }
+                ptsR.add(p);
+            }
+        }
+        Point2D.Double pMin = ptsP2.get(0);
+        ptsR.add(new Point2D.Double(-pMin.x, -pMin.y));
+        for (int i = 1; i < min; i++) {
+            Point2D.Double p = ptsP2.get(i);
+            p.setLocation(-p.x, -p.y);
+            // Avoid inserting horizontal lines in the shadow
+            if (ptsR.getLast().y != p.y) {
+                ptsR.add(p);
+            }
+        }
+
+        // System.out.println("R: " + ptsR);
+        Polygon R = new Polygon(ptsR);
+        return R;
     }
 
 }

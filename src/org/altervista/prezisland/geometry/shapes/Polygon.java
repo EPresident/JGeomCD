@@ -44,12 +44,17 @@ public class Polygon {
 
     public Polygon(Point2D.Double[] pts) {
         points = new ArrayList<>();
-        points.addAll(Arrays.asList(pts));
+        for(Point2D.Double p : pts){
+            points.add(new Point2D.Double(p.x, p.y));
+        }
         center = calculateCenter();
     }
 
     public Polygon(Collection<Point2D.Double> pts) {
-        points = new ArrayList<>(pts);
+        points = new ArrayList<>();
+        for(Point2D.Double p : pts){
+            points.add(new Point2D.Double(p.x, p.y));
+        }
         center = calculateCenter();
     }
     

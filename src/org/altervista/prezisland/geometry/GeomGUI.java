@@ -42,6 +42,7 @@ import java.util.List;
 public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     private static final int POINT_HALFWIDTH = 2;
+    private static final double ORIGIN_X_OFFSET = 200, ORIGIN_Y_OFFSET = 200;
     private Polygon activePoly;
     private Point2D.Double origin;
     private final LinkedList<Polygon> shapes;
@@ -71,19 +72,20 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public void paint(Graphics g) {
         /*System.out.println("window size: " + getWidth() + "," + getHeight());
          System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());*/
-        origin.setLocation(drawPanel.getLocation().getX() + 100, drawPanel.getHeight() - 100);
+        origin.setLocation(drawPanel.getLocation().getX() + ORIGIN_X_OFFSET, 
+                drawPanel.getHeight() - ORIGIN_Y_OFFSET);
         // System.out.println("origin: " + origin);
         g.clearRect(0, 0, this.getWidth(), getHeight());
         this.paintComponents(g);
         drawGrid(drawPanel.getGraphics());
-        for (Point2D.Double p : vectors) {
-            drawVector(drawPanel.getGraphics(), (int) p.x, (int) p.y);
-        }
         for (Line l : lines) {
             drawLine(l, drawPanel.getGraphics());
         }
         for (Polygon s : shapes) {
             drawShape(s, drawPanel.getGraphics());
+        }
+        for (Point2D.Double p : vectors) {
+            drawVector(drawPanel.getGraphics(), (int) p.x, (int) p.y);
         }
         for (Point2D.Double p : points) {
             drawPoint(p, drawPanel.getGraphics());
@@ -98,8 +100,8 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public void addPoint(Point2D.Double p) {
         points.add(p);
     }
-    
-    public void clearPoints(){
+
+    public void clearPoints() {
         points.clear();
     }
 
@@ -110,8 +112,8 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public void addLine(Line l) {
         lines.add(l);
     }
-    
-    public void clearLines(){
+
+    public void clearLines() {
         lines.clear();
     }
 
@@ -278,10 +280,10 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         int maxX = 500, minX = -100;
         Color c = g.getColor();
         g.setColor(Color.GREEN);
-   /*     System.out.println("origin: " + origin);
-        System.out.println("draw: " + (minX) + "," + normalizeY(l.calculateY(minX)) + " - " + (maxX) + "," + normalizeY(l.calculateY(maxX)));*/
-        g.drawLine((int)normalizeX(minX), (int) normalizeY(l.calculateY(minX)), 
-                (int)normalizeX(maxX), (int) normalizeY(l.calculateY(maxX)));
+        /*     System.out.println("origin: " + origin);
+         System.out.println("draw: " + (minX) + "," + normalizeY(l.calculateY(minX)) + " - " + (maxX) + "," + normalizeY(l.calculateY(maxX)));*/
+        g.drawLine((int) normalizeX(minX), (int) normalizeY(l.calculateY(minX)),
+                (int) normalizeX(maxX), (int) normalizeY(l.calculateY(maxX)));
         g.setColor(c);
     }
 
@@ -363,7 +365,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     private double normalizeY(double y) {
         return origin.y - y;
     }
-    
+
     private double normalizeX(double x) {
         return origin.x + x;
     }
