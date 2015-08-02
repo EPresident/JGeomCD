@@ -541,6 +541,9 @@ public class CollisionDetection {
                     System.out.println("BELOW");
                     // Drop Bh and g
                     B = new Polygon(B.getPoints().subList(0, j + 1));
+                }else{
+                    System.out.println("tF "+testF);
+                    System.out.println("lF "+lineF);
                 }
             }
             if (testG != null) {

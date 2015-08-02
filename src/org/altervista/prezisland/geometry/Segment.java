@@ -47,19 +47,20 @@ public class Segment extends Line {
 
     @Override
     public RelativePosition testAgainst(Point2D.Double p) {
+        final double TOLLERANCE = 0.001;
         double a = super.getA(), b = super.getB(), c = super.getC();
         if (a == 0) {
             // Horizontal line
-            if (p.y < -(c / b)) {
+            if (p.y < -(c / b) - TOLLERANCE) {
                 return Position.RIGHT;
             }
-            if (p.y > -(c / b)) {
+            if (p.y > -(c / b) + TOLLERANCE) {
                 return Position.LEFT;
             } else {
                 // Point is collinear
-                if (p.x >= p1.x && p.x <= p2.x) {
+                if (p.x >= p1.x + TOLLERANCE && p.x <= p2.x - TOLLERANCE) {
                     return Position.COLLIDES;
-                } else if (p.x < p1.x) {
+                } else if (p.x < p1.x - TOLLERANCE) {
                     return Position.COLLINEAR_BELOW;
                 } else {
                     // p.x > p2.x
@@ -68,16 +69,16 @@ public class Segment extends Line {
             }
         } else if (b == 0) {
             // Vertical line
-            if (p.x < -(c / a)) {
+            if (p.x < -(c / a) - TOLLERANCE) {
                 return Position.LEFT;
             }
-            if (p.x > -(c / a)) {
+            if (p.x > -(c / a) + TOLLERANCE) {
                 return Position.RIGHT;
             } else {
                 // Point is collinear
-                if (p.y >= p1.y && p.y <= p2.y) {
+                if (p.y >= p1.y + TOLLERANCE && p.y <= p2.y - TOLLERANCE) {
                     return Position.COLLIDES;
-                } else if (p.y < p1.y) {
+                } else if (p.y < p1.y - TOLLERANCE) {
                     return Position.COLLINEAR_BELOW;
                 } else {
                     // p.y > p2.y
@@ -88,15 +89,16 @@ public class Segment extends Line {
             // Oblique line
             double slope = super.getSlope(), yIntercept = super.getYIntercept();
             if (slope < 0) {
-                if (p.y > slope * p.x + yIntercept) {
+                if (p.y > slope * p.x + yIntercept + TOLLERANCE) {
                     return Position.RIGHT;
-                } else if (p.y < slope * p.x + yIntercept) {
+                } else if (p.y < slope * p.x + yIntercept - TOLLERANCE) {
                     return Position.LEFT;
                 } else {
                     // Point is collinear
-                    if (p.y >= p2.y && p.y <= p1.y && p.x >= p1.x && p.x <= p2.x) {
+                    if (p.y >= p2.y + TOLLERANCE && p.y <= p1.y - TOLLERANCE
+                            && p.x >= p1.x + TOLLERANCE && p.x <= p2.x - TOLLERANCE) {
                         return Position.COLLIDES;
-                    } else if (p.y > p1.y && p.x < p1.x) {
+                    } else if (p.y > p1.y + TOLLERANCE && p.x < p1.x - TOLLERANCE) {
                         return Position.COLLINEAR_BELOW;
                     } else {
                         // p.y < p2.y && p.x > p2.x
@@ -105,16 +107,17 @@ public class Segment extends Line {
                 }
             } else {
                 // Slope > 0
-                System.out.println(yIntercept);
-                if (p.y < slope * p.x + yIntercept) {
+                //System.out.println(yIntercept);
+                if (p.y < slope * p.x + yIntercept - TOLLERANCE) {
                     return Position.RIGHT;
-                } else if (p.y > slope * p.x + yIntercept) {
+                } else if (p.y > slope * p.x + yIntercept + TOLLERANCE) {
                     return Position.LEFT;
                 } else {
                     // Point is collinear
-                    if (p.y >= p1.y && p.y <= p2.y && p.x >= p1.x && p.x <= p2.x) {
+                    if (p.y >= p1.y + TOLLERANCE && p.y <= p2.y - TOLLERANCE
+                            && p.x >= p1.x + TOLLERANCE && p.x <= p2.x - TOLLERANCE) {
                         return Position.COLLIDES;
-                    } else if (p.y < p1.y && p.x < p1.x) {
+                    } else if (p.y < p1.y - TOLLERANCE && p.x < p1.x - TOLLERANCE) {
                         return Position.COLLINEAR_BELOW;
                     } else {
                         // p.y > p2.y && p.x > p2.x
@@ -149,9 +152,9 @@ public class Segment extends Line {
     public Point2D.Double testIntersection(Line l) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
-    
-    public Line asLine(){
-        return new Line(p1,p2);
+
+    public Line asLine() {
+        return new Line(p1, p2);
     }
 
     public Point2D.Double getP1() {
