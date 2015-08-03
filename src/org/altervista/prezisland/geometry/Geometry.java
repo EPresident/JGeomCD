@@ -56,7 +56,7 @@ public final class Geometry {
 
         // Convolution test
         Polygon p1 = new Polygon(RECTANGLE1);
-        p1.traslate(150, 50);
+        p1.traslate(125, 50);
         Polygon p2 = new Polygon(SQUARE1.getPoints());
         p2.traslate(100, 100);
         gui.addShape(p1);
@@ -65,7 +65,7 @@ public final class Geometry {
         //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
         // System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
-        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, DIR_VERT, gui));
+        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, DIR_BISECT, gui));
     }
 
     public static void main(String[] args) {

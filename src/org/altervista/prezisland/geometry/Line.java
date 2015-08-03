@@ -43,9 +43,10 @@ public class Line {
         RIGHT, //BELOW, 
         COLLIDES
     };
-    
+
     /**
      * Clone constructor.
+     *
      * @param l Line to clone
      */
     public Line(Line l) {
@@ -239,6 +240,7 @@ public class Line {
         if (isVertical()) {
             a = 1;
             c = -p.getX();
+            yIntercept = -c / b;
         } else if (isHorizontal()) {
             b = 1;
             c = -p.getY();
@@ -250,6 +252,8 @@ public class Line {
             a = p1Y - p2Y;
             b = p2X - p1X;
             c = p1Y * (p1X - p2X) + p1X * (p2Y - p1Y);
+            slope = (-a) / b;
+            yIntercept = (-c) / b;
         }
     }
 

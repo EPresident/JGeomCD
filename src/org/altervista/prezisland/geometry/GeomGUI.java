@@ -116,6 +116,13 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public void clearLines() {
         lines.clear();
     }
+    
+    public void clearAll(){
+        shapes.clear();
+        points.clear();
+        vectors.clear();
+        lines.clear();
+    }
 
     private CartesianVector getPenetrationVector(Polygon s1, Polygon s2) {
         Graphics g = drawPanel.getGraphics();

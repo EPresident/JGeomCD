@@ -458,13 +458,13 @@ public class CollisionDetection {
         System.out.println("B: " + B.getPoints());
         System.out.println("w: " + w);
         System.out.println("Direction: " + d);
-        gui.clearLines();
+        gui.clearAll();
         gui.addLine(d);
-        gui.addShape(A);
-        gui.addShape(B);
-        //     gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        // gui.addShape(A);
+        // gui.addShape(B);
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
         gui.addVector(w);
-        throw new RuntimeException("Stop");
+        //throw new RuntimeException("Stop");
         // endpoints
         Point2D.Double a1 = A.getPoints().get(0),
                 a2 = A.getPoints().get(A.getPoints().size() - 1),
@@ -626,9 +626,8 @@ public class CollisionDetection {
             }
         }
         // Add Point to infinity
-        ptsR.add(new Point2D.Double(NEG_INFINITY,-ptsR.get(ptsR.size()-1).y));
-        
-        
+        ptsR.add(new Point2D.Double(NEG_INFINITY, -ptsR.get(ptsR.size() - 1).y));
+
         // System.out.println("R: " + ptsR);
         Polygon R = new Polygon(ptsR);
         return R;
