@@ -72,7 +72,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public void paint(Graphics g) {
         /*System.out.println("window size: " + getWidth() + "," + getHeight());
          System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());*/
-        origin.setLocation(drawPanel.getLocation().getX() + ORIGIN_X_OFFSET, 
+        origin.setLocation(drawPanel.getLocation().getX() + ORIGIN_X_OFFSET,
                 drawPanel.getHeight() - ORIGIN_Y_OFFSET);
         // System.out.println("origin: " + origin);
         g.clearRect(0, 0, this.getWidth(), getHeight());
@@ -282,8 +282,14 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         g.setColor(Color.GREEN);
         /*     System.out.println("origin: " + origin);
          System.out.println("draw: " + (minX) + "," + normalizeY(l.calculateY(minX)) + " - " + (maxX) + "," + normalizeY(l.calculateY(maxX)));*/
-        g.drawLine((int) normalizeX(minX), (int) normalizeY(l.calculateY(minX)),
-                (int) normalizeX(maxX), (int) normalizeY(l.calculateY(maxX)));
+        if (l.isVertical()) {
+            double x = l.calculateX(0);
+            g.drawLine((int) normalizeX(x), (int) normalizeY(minX),
+                    (int) normalizeX(x), (int) normalizeY(maxX));
+        } else {
+            g.drawLine((int) normalizeX(minX), (int) normalizeY(l.calculateY(minX)),
+                    (int) normalizeX(maxX), (int) normalizeY(l.calculateY(maxX)));
+        }
         g.setColor(c);
     }
 

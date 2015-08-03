@@ -43,6 +43,31 @@ public class Line {
         RIGHT, //BELOW, 
         COLLIDES
     };
+    
+    /**
+     * Clone constructor.
+     * @param l Line to clone
+     */
+    public Line(Line l) {
+        this.a = l.a;
+        this.b = l.b;
+        this.c = l.c;
+        if (a == 0 && b == 0) {
+            // degenerates into a Point
+            throw new RuntimeException("Invalid Line.");
+        } else if (a == 0) {
+            // Horizontal line
+            slope = 0;
+            yIntercept = -c / b;
+        } else if (b == 0) {
+            // Vertical line
+            slope = INFINITY;
+            yIntercept = INFINITY;
+        } else {
+            slope = (-a) / b;
+            yIntercept = (-c) / b;
+        }
+    }
 
     public Line(Point2D.Double p1, Point2D.Double p2) {
         this(p1.x, p1.y, p2.x, p2.y);
@@ -270,9 +295,9 @@ public class Line {
             double a1 = (this.a - l.a) / 2, b1 = (this.b - l.b) / 2,
                     c1 = (this.c - l.c) / 2;
             double TOLLERANCE = 0.001;
-            if ((a1 > this.a - TOLLERANCE && a1 < this.a + TOLLERANCE) &&
-                    (b1 > this.b - TOLLERANCE && b1 < this.b + TOLLERANCE) &&
-                    (c1 > this.c - TOLLERANCE && c1 < this.c + TOLLERANCE)) {
+            if ((a1 > this.a - TOLLERANCE && a1 < this.a + TOLLERANCE)
+                    && (b1 > this.b - TOLLERANCE && b1 < this.b + TOLLERANCE)
+                    && (c1 > this.c - TOLLERANCE && c1 < this.c + TOLLERANCE)) {
                 return true;
             }
         }

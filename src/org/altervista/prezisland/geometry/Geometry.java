@@ -35,9 +35,8 @@ import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 public final class Geometry {
 
     private final GeomGUI gui;
-    private static final Polygon 
-            RECTANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
-            new Point2D.Double(50, 0),new Point2D.Double(50, 100),new Point2D.Double(0, 100)}),
+    private static final Polygon RECTANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
+        new Point2D.Double(50, 0), new Point2D.Double(50, 100), new Point2D.Double(0, 100)}),
             SQUARE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
                 new Point2D.Double(100, 0), new Point2D.Double(100, 100),
                 new Point2D.Double(0, 100)}),
@@ -45,6 +44,9 @@ public final class Geometry {
                 new Point2D.Double(0, 0), new Point2D.Double(50, -10),
                 new Point2D.Double(80, 70), new Point2D.Double(50, 100),
                 new Point2D.Double(20, 60)});
+    private static final Line DIR_HOR = new Line(0, 0, 1, 0),
+            DIR_VERT = new Line(0, 0, 0, 1),
+            DIR_BISECT = new Line(0, 0, 1, 1);
 
     ;
 
@@ -63,7 +65,7 @@ public final class Geometry {
         //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
         // System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
-        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, gui));
+        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, DIR_VERT, gui));
     }
 
     public static void main(String[] args) {

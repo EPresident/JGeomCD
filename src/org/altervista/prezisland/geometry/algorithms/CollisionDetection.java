@@ -41,6 +41,7 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
  */
 public class CollisionDetection {
 
+    final static double NEG_INFINITY = -100000;
 
     public static double getPenetrationAmount(final Polygon P1, final Polygon P2, Line d, GeomGUI gui) {
         // Duplicate polygons to avoid conflicts
@@ -106,8 +107,9 @@ public class CollisionDetection {
         Point2D.Double w2 = new Point2D.Double(x.x - y.x, x.y - y.y);
 
         // Test : horizontal direction
-        Line d1 = new Line(w1.x, w1.y, w1.x + 1, w1.y),
-                d2 = new Line(w2.x, w2.y, w2.x + 1, w2.y);
+        Line d1 = new Line(d), d2 = new Line(d);
+        d1.traslate(w1);
+        d2.traslate(w2);
 
         System.out.println("\n\n --- TEST 1 --- \n\n");
         double pen1 = penDepth(lsP, rsiQ, w1, d1, gui);
@@ -452,17 +454,17 @@ public class CollisionDetection {
      * @return Depth of penetration (in pixels)
      */
     public static double penDepth(Polygon A, Polygon B, Point2D.Double w, Line d, GeomGUI gui) {
-        /*System.out.println("A: " + A.getPoints());
-         System.out.println("B: " + B.getPoints());
-         System.out.println("w: " + w);*/
+        System.out.println("A: " + A.getPoints());
+        System.out.println("B: " + B.getPoints());
+        System.out.println("w: " + w);
         System.out.println("Direction: " + d);
         gui.clearLines();
         gui.addLine(d);
         gui.addShape(A);
         gui.addShape(B);
-        gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        //     gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
         gui.addVector(w);
-        // throw new RuntimeException("Stop");
+        throw new RuntimeException("Stop");
         // endpoints
         Point2D.Double a1 = A.getPoints().get(0),
                 a2 = A.getPoints().get(A.getPoints().size() - 1),
@@ -568,11 +570,14 @@ public class CollisionDetection {
 
     public static Polygon getLeftShadow(Polygon P, int max, int min) {
         // use the Polygon constructor to clone the points
-        Polygon P2 = new Polygon(P.getPoints());
+        Polygon P2 = new Polygon(P);
         LinkedList<Point2D.Double> ptsR = new LinkedList<>();
         List<Point2D.Double> ptsP2 = P2.getPoints();
 
-        ptsR.add(ptsP2.get(min));
+        Point2D.Double pMin = ptsP2.get(min);
+        // Add Point to infinity
+        ptsR.add(new Point2D.Double(NEG_INFINITY, pMin.getY()));
+        ptsR.add(pMin);
         for (int i = min + 1; i < max + 1; i++) {
             Point2D.Double p = ptsP2.get(i);
             // Avoid inserting horizontal lines in the shadow
@@ -581,7 +586,9 @@ public class CollisionDetection {
             }
             ptsR.add(p);
         }
-        //return new Polygon(P2.getPoints().subList(min, max + 1));
+        Point2D.Double pMax = ptsR.get(ptsR.size() - 1);
+        // Add Point to infinity
+        ptsR.add(new Point2D.Double(NEG_INFINITY, pMax.y));
         return new Polygon(ptsR);
     }
 
@@ -594,6 +601,8 @@ public class CollisionDetection {
         List<Point2D.Double> ptsP2 = P2.getPoints();
 
         Point2D.Double pMax = ptsP2.get(max);
+        // Add Point to infinity
+        ptsR.add(new Point2D.Double(NEG_INFINITY, -pMax.y));
         ptsR.add(new Point2D.Double(-pMax.x, -pMax.y));
         if (max < ptsP2.size()) {
             for (int i = max + 1; i < ptsP2.size(); i++) {
@@ -616,7 +625,10 @@ public class CollisionDetection {
                 ptsR.add(p);
             }
         }
-
+        // Add Point to infinity
+        ptsR.add(new Point2D.Double(NEG_INFINITY,-ptsR.get(ptsR.size()-1).y));
+        
+        
         // System.out.println("R: " + ptsR);
         Polygon R = new Polygon(ptsR);
         return R;
