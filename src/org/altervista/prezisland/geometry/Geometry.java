@@ -27,7 +27,6 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.List;
 import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
-import org.altervista.prezisland.geometry.shapes.AABB;
 
 /**
  *
@@ -36,7 +35,9 @@ import org.altervista.prezisland.geometry.shapes.AABB;
 public final class Geometry {
 
     private final GeomGUI gui;
-    private static final Polygon RECTANGLE1 = new AABB(200, 200, 200, 100),
+    private static final Polygon 
+            RECTANGLE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
+            new Point2D.Double(50, 0),new Point2D.Double(50, 100),new Point2D.Double(0, 100)}),
             SQUARE1 = new Polygon(new Point2D.Double[]{new Point2D.Double(0, 0),
                 new Point2D.Double(100, 0), new Point2D.Double(100, 100),
                 new Point2D.Double(0, 100)}),
@@ -52,8 +53,8 @@ public final class Geometry {
         gui.setVisible(true);
 
         // Convolution test
-        Polygon p1 = new Polygon(PENTAGON1);
-        p1.traslate(50, 50);
+        Polygon p1 = new Polygon(RECTANGLE1);
+        p1.traslate(150, 50);
         Polygon p2 = new Polygon(SQUARE1.getPoints());
         p2.traslate(100, 100);
         gui.addShape(p1);

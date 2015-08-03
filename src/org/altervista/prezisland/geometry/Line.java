@@ -37,7 +37,7 @@ public class Line {
     private double a, b, c;
     public static final double INFINITY = Double.MAX_VALUE;
 
-    public static enum Position implements RelativePosition{
+    public static enum Position implements RelativePosition {
 
         LEFT, //ABOVE, 
         RIGHT, //BELOW, 
@@ -177,7 +177,7 @@ public class Line {
                      Line l1: y = m*x + q
                      Line l2: y = n*x + r
                      Intersection x: m*x + q = n*x + r
-                                    --> x = (r - q)/(m-n)
+                     --> x = (r - q)/(m-n)
                      */
                     double x = (l.yIntercept - this.yIntercept) / (this.slope - l.slope);
                     return new Point2D.Double(x, this.calculateY(x));
@@ -185,6 +185,47 @@ public class Line {
             }
         }
         return null;
+    }
+
+    public double calculateY(double x) {
+        if (a != 0 && b != 0) {
+            return (x * slope) + yIntercept;
+        } else if (a == 0) {
+            return -c / b;
+        }
+        throw new RuntimeException("Cannot calculate Y of a vertical line!");
+    }
+
+    public double calculateX(double y) {
+        if (a != 0 && b != 0) {
+            return (-b / a) * y + (-c / a);
+        } else if (b == 0) {
+            return -c / a;
+        }
+        throw new RuntimeException("Cannot calculate Y of an horizontal line!");
+    }
+
+    /**
+     * Test pending!
+     *
+     * @param p
+     */
+    public void traslate(Point2D p) {
+        if (isVertical()) {
+            a = 1;
+            c = -p.getX();
+        } else if (isHorizontal()) {
+            b = 1;
+            c = -p.getY();
+        } else {
+            double y = calculateY(1);
+            y -= calculateY(0);
+            double p1X = p.getX(), p1Y = p.getY();
+            double p2X = p1X + 1, p2Y = p1Y + y;
+            a = p1Y - p2Y;
+            b = p2X - p1X;
+            c = p1Y * (p1X - p2X) + p1X * (p2Y - p1Y);
+        }
     }
 
     public double getSlope() {
@@ -219,29 +260,19 @@ public class Line {
         return a != 0 && b != 0;
     }
 
-    public double calculateY(double x) {
-        if (a != 0 && b != 0) {
-            return (x * slope) + yIntercept;
-        } else if (a == 0) {
-            return -c / b;
-        }
-        throw new RuntimeException("Cannot calculate Y of a vertical line!");
-    }
-
-    public double calculateX(double y) {
-        if (a != 0 && b != 0) {
-            return (-b / a) * y + (-c / a);
-        } else if (b == 0) {
-            return -c / a;
-        }
-        throw new RuntimeException("Cannot calculate Y of an horizontal line!");
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o instanceof Line) {
             Line l = (Line) o;
             if (this.a == l.a && this.b == l.b && this.c == l.c) {
+                return true;
+            }
+            double a1 = (this.a - l.a) / 2, b1 = (this.b - l.b) / 2,
+                    c1 = (this.c - l.c) / 2;
+            double TOLLERANCE = 0.001;
+            if ((a1 > this.a - TOLLERANCE && a1 < this.a + TOLLERANCE) &&
+                    (b1 > this.b - TOLLERANCE && b1 < this.b + TOLLERANCE) &&
+                    (c1 > this.c - TOLLERANCE && c1 < this.c + TOLLERANCE)) {
                 return true;
             }
         }

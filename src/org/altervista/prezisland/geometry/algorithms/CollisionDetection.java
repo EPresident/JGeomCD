@@ -41,17 +41,8 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
  */
 public class CollisionDetection {
 
-    /*  private Point2D.Double getEndpoints(Polygon poly, boolean upper) {
-     // Minimum Y point must be first
-     ArrayList<Point2D.Double> pts = poly.getPoints();
-     double maxY = pts.get(0).y;
-     int l = 0, r = pts.size() - 1, m = -1;
-     do {
-            
-     } while (l-r>0);
-     return null;
-     }*/
-    public static double getPenetrationAmount(final Polygon P1, final Polygon P2, GeomGUI gui) {
+
+    public static double getPenetrationAmount(final Polygon P1, final Polygon P2, Line d, GeomGUI gui) {
         // Duplicate polygons to avoid conflicts
         Polygon P = new Polygon(P1), Q = new Polygon(P2);
         // Reference point for P
@@ -115,8 +106,8 @@ public class CollisionDetection {
         Point2D.Double w2 = new Point2D.Double(x.x - y.x, x.y - y.y);
 
         // Test : horizontal direction
-        Line d1 = new Line(w1.x, w1.y, w1.x + 1, w1.x),
-                d2 = new Line(w2.x, w2.y, w2.x + 1, w2.x);
+        Line d1 = new Line(w1.x, w1.y, w1.x + 1, w1.y),
+                d2 = new Line(w2.x, w2.y, w2.x + 1, w2.y);
 
         System.out.println("\n\n --- TEST 1 --- \n\n");
         double pen1 = penDepth(lsP, rsiQ, w1, d1, gui);
@@ -464,12 +455,13 @@ public class CollisionDetection {
         /*System.out.println("A: " + A.getPoints());
          System.out.println("B: " + B.getPoints());
          System.out.println("w: " + w);*/
-       // gui.clearLines();
-       // gui.addLine(d);
-        //    gui.addShape(A);
-        //    gui.addShape(B);
-       // gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
-        //   gui.addVector(w);
+        System.out.println("Direction: " + d);
+        gui.clearLines();
+        gui.addLine(d);
+        gui.addShape(A);
+        gui.addShape(B);
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        gui.addVector(w);
         // throw new RuntimeException("Stop");
         // endpoints
         Point2D.Double a1 = A.getPoints().get(0),
@@ -515,35 +507,34 @@ public class CollisionDetection {
             Segment segF = new Segment(f1X, f1Y, f2X, f2Y),
                     segG = new Segment(f2X, f2Y, g2X, g2Y);
 
-           /*System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
-            System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);
-            System.out.println("lineF: " + lineF);
-            System.out.println("lineG: " + lineG);
-            System.out.println("w:" + w);*/
+            /*System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
+             System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);
+             System.out.println("lineF: " + lineF);
+             System.out.println("lineG: " + lineG);
+             System.out.println("w:" + w);*/
             /*   gui.clearLines();
              gui.addLine(lineF);
              gui.addLine(lineG);*/
-
             Point2D.Double testF = lineF.testIntersection(d),
                     testG = lineG.testIntersection(d);
             // testIntersection() returns a Point or null
-          //  System.out.println("tests: " + testF + "," + testG);
+            //  System.out.println("tests: " + testF + "," + testG);
             if (testF != null) {
                 Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
                 System.out.println("posF: " + posF);
                 if (posF == Segment.Position.COLLIDES) {
                     // GOTCHA!
-              //      gui.addVector(testF);
-                    System.out.println("GOTCHA! "+Geometry.getLength(w, testF));
+                    //      gui.addVector(testF);
+                    System.out.println("GOTCHA! " + Geometry.getLength(w, testF));
                     return Geometry.getLength(w, testF);
                 } else if (posF == Segment.Position.COLLINEAR_BELOW) {
                     // BELOW
                     System.out.println("BELOW");
                     // Drop Bh and g
                     B = new Polygon(B.getPoints().subList(0, j + 1));
-                }else{
-                    System.out.println("tF "+testF);
-                    System.out.println("lF "+lineF);
+                } else {
+                    System.out.println("tF " + testF);
+                    System.out.println("lF " + lineF);
                 }
             }
             if (testG != null) {
@@ -551,8 +542,8 @@ public class CollisionDetection {
                 System.out.println("posG: " + posG);
                 if (posG == Segment.Position.COLLIDES) {
                     // GOTCHA!
-                  //  gui.addVector(testG);
-                    System.out.println("GOTCHA! "+Geometry.getLength(w, testG));
+                    //  gui.addVector(testG);
+                    System.out.println("GOTCHA! " + Geometry.getLength(w, testG));
                     return Geometry.getLength(w, testG);
                 } else if (posG == Segment.Position.COLLINEAR_ABOVE) {
                     // ABOVE

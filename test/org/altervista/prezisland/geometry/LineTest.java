@@ -68,8 +68,8 @@ public class LineTest {
         Line.Position[] expResults = {Line.Position.RIGHT, Line.Position.LEFT,
             Line.Position.LEFT, Line.Position.RIGHT, Line.Position.COLLIDES};
         for (int i = 0; i < ps.length; i++) {
-            Line.Position result = (Line.Position)instance.testAgainst(ps[i]);   
-            System.out.println("Testing against "+ps[i]);
+            Line.Position result = (Line.Position) instance.testAgainst(ps[i]);
+            System.out.println("Testing against " + ps[i]);
             assertEquals(expResults[i], result);
         }
     }
@@ -103,13 +103,28 @@ public class LineTest {
         int k = 0;
         for (int i = 0; i < l1s.length; i++) {
             for (int j = 0; j < l2s.length; j++) {
-                System.out.println("Testing "+l1s[i]+"\nagainst "+l2s[j]+"\nexpected: "+expResults[k]);
+                System.out.println("Testing " + l1s[i] + "\nagainst " + l2s[j] + "\nexpected: " + expResults[k]);
                 Point2D.Double result = l1s[i].testIntersection(l2s[j]);
                 assertEquals(expResults[k++], result);
                 System.out.println("");
             }
         }
 
+    }
+
+    @Test
+    public void testTranslate() {
+        System.out.println(" --- testTranslate --- ");
+        Point2D.Double p = new Point2D.Double(50, 100);
+        Line[] instances = {new Line(0, 0, 1, 0), new Line(0, 0, 0, 1), new Line(0, 0, 1, 1)};
+        Line[] expResults = {new Line(50, 100, 51, 100), new Line(50, 100, 50, 101), new Line(50, 100, 51, 101)};
+        for (int i = 0; i < instances.length; i++) {
+            System.out.println("before: "+instances[i]);
+            instances[i].traslate(p);
+            System.out.println("after: "+instances[i]);
+            System.out.println("expected: "+expResults[i]+"\n");
+            assertEquals(expResults[i], instances[i]);
+        }
     }
 
     /**
@@ -141,12 +156,12 @@ public class LineTest {
      */
     @Test
     public void testCalculateY() {
-       /* System.out.println("calculateY");
-        double x = 0.0;
-        Line instance = null;
-        double expResult = 0.0;
-        double result = instance.calculateY(x);
-        assertEquals(expResult, result, 0.0);*/
+        /* System.out.println("calculateY");
+         double x = 0.0;
+         Line instance = null;
+         double expResult = 0.0;
+         double result = instance.calculateY(x);
+         assertEquals(expResult, result, 0.0);*/
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -156,12 +171,12 @@ public class LineTest {
      */
     @Test
     public void testCalculateX() {
-      /*  System.out.println("calculateX");
-        double y = 0.0;
-        Line instance = null;
-        double expResult = 0.0;
-        double result = instance.calculateX(y);
-        assertEquals(expResult, result, 0.0);*/
+        /*  System.out.println("calculateX");
+         double y = 0.0;
+         Line instance = null;
+         double expResult = 0.0;
+         double result = instance.calculateX(y);
+         assertEquals(expResult, result, 0.0);*/
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
@@ -171,12 +186,12 @@ public class LineTest {
      */
     @Test
     public void testEquals() {
-       /* System.out.println("equals");
-        Object o = null;
-        Line instance = null;
-        boolean expResult = false;
-        boolean result = instance.equals(o);
-        assertEquals(expResult, result);*/
+        /* System.out.println("equals");
+         Object o = null;
+         Line instance = null;
+         boolean expResult = false;
+         boolean result = instance.equals(o);
+         assertEquals(expResult, result);*/
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }

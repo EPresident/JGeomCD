@@ -58,9 +58,9 @@ public class Segment extends Line {
                 return Position.LEFT;
             } else {
                 // Point is collinear
-                if (p.x >= p1.x + TOLLERANCE && p.x <= p2.x - TOLLERANCE) {
+                if (p.x >= p1.x - TOLLERANCE && p.x <= p2.x + TOLLERANCE) {
                     return Position.COLLIDES;
-                } else if (p.x < p1.x - TOLLERANCE) {
+                } else if (p.x < p1.x + TOLLERANCE) {
                     return Position.COLLINEAR_BELOW;
                 } else {
                     // p.x > p2.x
@@ -76,9 +76,9 @@ public class Segment extends Line {
                 return Position.RIGHT;
             } else {
                 // Point is collinear
-                if (p.y >= p1.y + TOLLERANCE && p.y <= p2.y - TOLLERANCE) {
+                if (p.y >= p1.y - TOLLERANCE && p.y <= p2.y + TOLLERANCE) {
                     return Position.COLLIDES;
-                } else if (p.y < p1.y - TOLLERANCE) {
+                } else if (p.y < p1.y + TOLLERANCE) {
                     return Position.COLLINEAR_BELOW;
                 } else {
                     // p.y > p2.y
@@ -95,10 +95,10 @@ public class Segment extends Line {
                     return Position.LEFT;
                 } else {
                     // Point is collinear
-                    if (p.y >= p2.y + TOLLERANCE && p.y <= p1.y - TOLLERANCE
-                            && p.x >= p1.x + TOLLERANCE && p.x <= p2.x - TOLLERANCE) {
+                    if (p.y >= p2.y - TOLLERANCE && p.y <= p1.y + TOLLERANCE
+                            && p.x >= p1.x - TOLLERANCE && p.x <= p2.x + TOLLERANCE) {
                         return Position.COLLIDES;
-                    } else if (p.y > p1.y + TOLLERANCE && p.x < p1.x - TOLLERANCE) {
+                    } else if (p.y > p1.y - TOLLERANCE && p.x < p1.x + TOLLERANCE) {
                         return Position.COLLINEAR_BELOW;
                     } else {
                         // p.y < p2.y && p.x > p2.x
@@ -107,17 +107,16 @@ public class Segment extends Line {
                 }
             } else {
                 // Slope > 0
-                //System.out.println(yIntercept);
                 if (p.y < slope * p.x + yIntercept - TOLLERANCE) {
                     return Position.RIGHT;
                 } else if (p.y > slope * p.x + yIntercept + TOLLERANCE) {
                     return Position.LEFT;
                 } else {
                     // Point is collinear
-                    if (p.y >= p1.y + TOLLERANCE && p.y <= p2.y - TOLLERANCE
-                            && p.x >= p1.x + TOLLERANCE && p.x <= p2.x - TOLLERANCE) {
+                    if (p.y >= p1.y - TOLLERANCE && p.y <= p2.y + TOLLERANCE
+                            && p.x >= p1.x - TOLLERANCE && p.x <= p2.x + TOLLERANCE) {
                         return Position.COLLIDES;
-                    } else if (p.y < p1.y - TOLLERANCE && p.x < p1.x - TOLLERANCE) {
+                    } else if (p.y < p1.y + TOLLERANCE && p.x < p1.x + TOLLERANCE) {
                         return Position.COLLINEAR_BELOW;
                     } else {
                         // p.y > p2.y && p.x > p2.x
@@ -130,7 +129,10 @@ public class Segment extends Line {
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        StringBuilder sb = new StringBuilder("Segment (");
+        sb.append(p1.x).append(",").append(p1.y).append(")->(").append(p2.x)
+                .append(",").append(p2.y).append("); ").append(super.toString());
+        return sb.toString();
     }
 
     @Override

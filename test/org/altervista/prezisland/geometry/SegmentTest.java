@@ -61,8 +61,10 @@ public class SegmentTest {
             Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
             Segment.Position.COLLINEAR_BELOW};
         for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance.asLine());
+            System.out.println("\ni: " + i + " " + instance);
+            System.out.println("point: " + points[i]);
             Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+            System.out.println("expected: " + expResults[i] + "; result: " + result);
             assertEquals(expResults[i], result);
         }
 
@@ -73,8 +75,10 @@ public class SegmentTest {
             Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
             Segment.Position.COLLINEAR_BELOW};
         for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance.asLine());
+            System.out.println("\ni: " + i + " " + instance);
+            System.out.println("point: " + points[i]);
             Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+            System.out.println("expected: " + expResults[i] + "; result: " + result);
             assertEquals(expResults[i], result);
         }
 
@@ -85,8 +89,10 @@ public class SegmentTest {
             Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
             Segment.Position.COLLINEAR_BELOW};
         for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance.asLine());           
+            System.out.println("\ni: " + i + " " + instance);
+            System.out.println("point: " + points[i]);
             Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+            System.out.println("expected: " + expResults[i] + "; result: " + result);
             assertEquals(expResults[i], result);
         }
 
@@ -97,10 +103,18 @@ public class SegmentTest {
             Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
             Segment.Position.COLLINEAR_BELOW};
         for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance.asLine());
+            System.out.println("\ni: " + i + " " + instance);
+            System.out.println("point: " + points[i]);
             Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+            System.out.println("expected: " + expResults[i] + "; result: " + result);
             assertEquals(expResults[i], result);
         }
+
+        // Tollerance test
+        instance = new Segment(0, 0, 1, 0);
+        Segment.Position result = (Segment.Position) instance.testAgainst(
+                new Point2D.Double(1.0001, 0));
+        assertEquals(Segment.Position.COLLIDES, result);
 
         System.out.println("\n");
     }
