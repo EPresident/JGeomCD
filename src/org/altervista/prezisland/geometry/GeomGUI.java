@@ -42,7 +42,7 @@ import java.util.List;
 public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     private static final int POINT_HALFWIDTH = 2;
-    private static final double ORIGIN_X_OFFSET = 200, ORIGIN_Y_OFFSET = 200;
+    private static final double ORIGIN_X_OFFSET = 300, ORIGIN_Y_OFFSET = 200;
     private Polygon activePoly;
     private Point2D.Double origin;
     private final LinkedList<Polygon> shapes;
@@ -284,7 +284,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     }
 
     private void drawLine(Line l, Graphics g) {
-        int maxX = 500, minX = -100;
+        int maxX = 1000, minX = -1000;
         Color c = g.getColor();
         g.setColor(Color.GREEN);
         /*     System.out.println("origin: " + origin);

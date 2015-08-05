@@ -46,7 +46,8 @@ public final class Geometry {
                 new Point2D.Double(20, 60)});
     private static final Line DIR_HOR = new Line(0, 0, 1, 0),
             DIR_VERT = new Line(0, 0, 0, 1),
-            DIR_BISECT = new Line(0, 0, 1, 1);
+            DIR_BISECT = new Line(0, 0, 1, 1),
+            DIR_BISECT_INV = new Line(0, 0, 1, -1);
 
     ;
 
@@ -57,7 +58,7 @@ public final class Geometry {
         // Convolution test
         Polygon p1 = new Polygon(RECTANGLE1);
         p1.traslate(125, 50);
-        Polygon p2 = new Polygon(SQUARE1.getPoints());
+        Polygon p2 = new Polygon(SQUARE1);
         p2.traslate(100, 100);
         gui.addShape(p1);
         gui.addShape(p2);
@@ -65,7 +66,7 @@ public final class Geometry {
         //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
         // System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
-        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, DIR_BISECT, gui));
+        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, new Line(0, 0,5, -1), gui));
     }
 
     public static void main(String[] args) {
