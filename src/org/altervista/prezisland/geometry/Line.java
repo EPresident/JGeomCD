@@ -213,10 +213,34 @@ public class Line {
         return null;
     }
 
+    public boolean contains(Point2D.Double p) {
+        return testAgainst(p) == Position.COLLIDES;
+    }
+
+    public Point2D.Double shiftPoint(Point2D.Double p, double distance) {
+        if (!contains(p)) {
+            return null;
+        }
+        Point2D.Double p2;
+        if (isVertical()) {
+            p2 = new Point2D.Double(p.x, p.y + 1);
+        } else {
+            p2 = new Point2D.Double(p.x + 1, calculateY(p.x + 1));
+        }
+
+        double dl = Geometry.getLength(p, p2);
+
+        return new Point2D.Double(p.x + (distance / dl) * (p2.x - p.x),
+                p.y + (distance / dl) * (p2.y - p.y));
+
+    }
+
     public double calculateY(double x) {
         if (a != 0 && b != 0) {
+            // Oblique line
             return (x * slope) + yIntercept;
         } else if (a == 0) {
+            // Horizontal line
             return -c / b;
         }
         throw new RuntimeException("Cannot calculate Y of a vertical line!");

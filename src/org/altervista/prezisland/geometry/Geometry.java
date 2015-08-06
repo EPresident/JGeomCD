@@ -43,7 +43,11 @@ public final class Geometry {
             PENTAGON1 = new Polygon(new Point2D.Double[]{
                 new Point2D.Double(0, 0), new Point2D.Double(50, -10),
                 new Point2D.Double(80, 70), new Point2D.Double(50, 100),
-                new Point2D.Double(20, 60)});
+                new Point2D.Double(20, 60)}),
+            HEXAGON1 = new Polygon(new Point2D.Double[]{
+                new Point2D.Double(0, 0), new Point2D.Double(50, -10),
+                new Point2D.Double(80, 70), new Point2D.Double(50, 100),
+                new Point2D.Double(20, 60), new Point2D.Double(-10, 20)});
     private static final Line DIR_HOR = new Line(0, 0, 1, 0),
             DIR_VERT = new Line(0, 0, 0, 1),
             DIR_BISECT = new Line(0, 0, 1, 1),
@@ -56,7 +60,7 @@ public final class Geometry {
         gui.setVisible(true);
 
         // Convolution test
-        Polygon p1 = new Polygon(PENTAGON1);
+        Polygon p1 = new Polygon(RECTANGLE1);
         p1.traslate(75, 100);
         Polygon p2 = new Polygon(SQUARE1);
         p2.traslate(100, 100);
@@ -66,16 +70,41 @@ public final class Geometry {
         //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
         // System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
-        Line dir = /*new Line(0, 0,5, -1)*/DIR_HOR;
+        Line dir = /*new Line(0, 0,5, -1)*/ DIR_HOR;
         boolean or = false;
         double result = CollisionDetection.getPenetrationDepth(
-                p1, p2,  dir, or, gui);
+                p1, p2, dir, or, gui);
         Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, dir, or, gui);
         System.out.println("Result: " + result + " " + vect);
-        if(or){
-            p1.traslate(-vect.x, -vect.y);
-        }else{
-            p1.traslate(vect.x, vect.y);
+        /*if (or) {
+         p1.traslate(-vect.x, -vect.y);
+         } else {
+         p1.traslate(vect.x, vect.y);
+         }*/
+        /* Point2D.Double pt1, pt2;
+         if (dir.isVertical()) {
+         pt1 = new Point2D.Double(dir.calculateX(0), 0);
+         pt2 = new Point2D.Double(dir.calculateX(0), 1);
+         } else {
+         pt1 = new Point2D.Double(0, dir.calculateY(0));
+         pt2 = new Point2D.Double(1, dir.calculateY(1));
+         }
+         double dl = Geometry.getLength(pt1, pt2);
+         if (or) {
+         p1.traslate(-(vect.x / dl) * (pt2.x - pt1.x),
+         -(vect.y / dl) * (pt2.y - pt1.y));
+         } else {
+         p1.traslate((vect.x / dl) * (pt2.x - pt1.x),
+         (vect.y / dl) * (pt2.y - pt1.y));
+         }*/
+        Point2D.Double base = p1.getPoints().get(0);
+        dir.traslate(base);
+        Point2D.Double shift = dir.shiftPoint(base, result);
+        if (or) {
+            p1.traslate(-shift.x + base.x, -shift.y + base.y);
+        } else {
+            p1.traslate(shift.x - base.x, shift.y - base.y);
+
         }
         gui.repaint();
     }
