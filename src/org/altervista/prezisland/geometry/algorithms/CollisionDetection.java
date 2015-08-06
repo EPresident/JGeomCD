@@ -107,17 +107,13 @@ public class CollisionDetection {
         Point2D.Double w1 = new Point2D.Double(y.x - x.x, y.y - x.y);
         Point2D.Double w2 = new Point2D.Double(x.x - y.x, x.y - y.y);
 
-        // Test : horizontal direction
         Line d1 = new Line(d), d2 = new Line(d);
         d1.traslate(w1);
         d2.traslate(w2);
 
-        System.out.println("\n\n --- TEST 1 --- \n\n");
         double pen1 = penDepth(lsP, rsiQ, w1, d1, orient, gui);
         if (pen1 == 0) {
-            //gui.clearAll();
-            System.out.println("\n\n --- TEST 2 --- \n\n");
-            return penDepth(lsQ, rsiP, w2, d2, orient, gui);
+            return penDepth(lsQ, rsiP, w2, d2, !orient, gui);
         } else {
             return pen1;
         }
@@ -538,6 +534,7 @@ public class CollisionDetection {
     public static double penDepth(Polygon A, Polygon B, Point2D.Double w, Line d,
             boolean orient, GeomGUI gui) {
         // Loop until a shadow is reduced to a single vertex
+        // Loop until a shadow is reduced to a single vertex
         while (A.getPointsNumber() > 1 && B.getPointsNumber() > 1) {
             // Median point indexes
             int i = (A.getPoints().size() - 1) / 2,
@@ -549,7 +546,6 @@ public class CollisionDetection {
             if (j == B.getPointsNumber() - 1) {
                 j--;
             }
-            System.out.println("\nSizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
             // Check if the segments starting from i and j are in slope order
             if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
                     > Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
@@ -576,6 +572,10 @@ public class CollisionDetection {
                     lineG = new Line(f2X, f2Y, g2X, g2Y);
             Segment segF = new Segment(f1X, f1Y, f2X, f2Y),
                     segG = new Segment(f2X, f2Y, g2X, g2Y);
+
+            /*   gui.clearLines();
+             gui.addLine(lineF);
+             gui.addLine(lineG);*/
             /*
              ------------------------------------------------------------------
              Check where the intersection lies
@@ -584,6 +584,8 @@ public class CollisionDetection {
             Point2D.Double testF = lineF.testIntersection(d),
                     testG = lineG.testIntersection(d);
             // testIntersection() returns a Point or null
+
+            // Got at least one intersection
             if (testF != null) {
                 /*
                  Check the position of the intersection point relative to edge f
@@ -592,19 +594,15 @@ public class CollisionDetection {
                  - testF is below f
                  */
                 Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
-                System.out.println("posF: " + posF);
                 if ((!d.isVertical() && ((orient && testF.x >= w.x) || (!orient && testF.x <= w.x)))
                         || (d.isVertical() && ((orient && testF.y >= w.y) || (!orient && testF.y <= w.y)))) {
                     // Intersection is valid
                     if (posF == Segment.Position.COLLIDES) {
                         // GOTCHA!
-                        System.out.println("GOTCHA! " + Geometry.getLength(w, testF));
                         return Geometry.getLength(w, testF);
                     } else if (posF == Segment.Position.COLLINEAR_BELOW) {
                         // Intersection below f: g and Bh can be removed
-                        System.out.println("BELOW");
                         B = new Polygon(B.getPoints().subList(0, j + 1));
-                        System.out.println("B shortened to " + B.getPointsNumber());
                         continue;
                     }
                 } else {
@@ -620,52 +618,39 @@ public class CollisionDetection {
                  - testG is above g
                  */
                 Segment.Position posG = (Segment.Position) segG.testAgainst(testG);
-                System.out.println("posG: " + posG);
                 if ((!d.isVertical() && ((orient && testG.x >= w.x) || (!orient && testG.x <= w.x)))
                         || (d.isVertical() && ((orient && testG.y >= w.y) || (!orient && testG.y <= w.y)))) {
                     // Intersection is valid
                     if (posG == Segment.Position.COLLIDES) {
                         // GOTCHA!
-                        System.out.println("GOTCHA! " + Geometry.getLength(w, testG));
                         return Geometry.getLength(w, testG);
                     } else if (posG == Segment.Position.COLLINEAR_ABOVE) {
                         // Intersection above g: f and Al can be removed
-                        System.out.println("ABOVE");
                         // Drop Al and f
                         A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
-                        System.out.println("A shortened to " + A.getPointsNumber());
                         continue;
                     }
                 } else {
                     // Intersection generated from the line, not the ray: discard it.
-                    System.out.println("Intersection for g invalid.");
                 }
             }
 
             // No valid intersection
             if (d.isVertical()) {
                 if (orient) {
-                    System.out.println("ABOVE_VERT");
                     // Drop Al and f
                     A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
-                    System.out.println("A shortened to " + A.getPointsNumber());
                     continue;
                 } else {
-                    System.out.println("BELOW_VERT");
                     B = new Polygon(B.getPoints().subList(0, j + 1));
-                    System.out.println("B shortened to " + B.getPointsNumber());
                     continue;
                 }
             }
-            //throw new RuntimeException("No valid intersection!");
-            System.out.println("No valid intersection!");
             return 0;
-
         }// End while loop
 
         // None of the above cases triggered
-        System.out.println("???2");
-        //throw new RuntimeException("???2");
+        System.err.println("???");
         return 0;
     }
 
