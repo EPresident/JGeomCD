@@ -99,10 +99,10 @@ public class Segment extends Line {
                             && p.x >= p1.x - TOLLERANCE && p.x <= p2.x + TOLLERANCE) {
                         return Position.COLLIDES;
                     } else if (p.y > p1.y - TOLLERANCE && p.x < p1.x + TOLLERANCE) {
-                        return Position.COLLINEAR_BELOW;
+                        return Position.COLLINEAR_ABOVE;
                     } else {
                         // p.y < p2.y && p.x > p2.x
-                        return Position.COLLINEAR_ABOVE;
+                        return Position.COLLINEAR_BELOW;
                     }
                 }
             } else {

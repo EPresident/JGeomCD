@@ -56,8 +56,8 @@ public final class Geometry {
         gui.setVisible(true);
 
         // Convolution test
-        Polygon p1 = new Polygon(RECTANGLE1);
-        p1.traslate(125, 50);
+        Polygon p1 = new Polygon(PENTAGON1);
+        p1.traslate(75, 100);
         Polygon p2 = new Polygon(SQUARE1);
         p2.traslate(100, 100);
         gui.addShape(p1);
@@ -66,7 +66,18 @@ public final class Geometry {
         //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
         // System.out.println("Result: " + CollisionDetection.getGuiPenAm(p1, p2, gui) + "-" + CollisionDetection.getGuiPenAm2(p1, p2, gui));
-        System.out.println("Result: " + CollisionDetection.getPenetrationAmount(p1, p2, new Line(0, 0,5, -1), gui));
+        Line dir = /*new Line(0, 0,5, -1)*/DIR_HOR;
+        boolean or = false;
+        double result = CollisionDetection.getPenetrationDepth(
+                p1, p2,  dir, or, gui);
+        Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, dir, or, gui);
+        System.out.println("Result: " + result + " " + vect);
+        if(or){
+            p1.traslate(-vect.x, -vect.y);
+        }else{
+            p1.traslate(vect.x, vect.y);
+        }
+        gui.repaint();
     }
 
     public static void main(String[] args) {
@@ -210,7 +221,7 @@ public final class Geometry {
     }
 
     public static double getLength(Point2D.Double p1, Point2D.Double p2) {
-        return Math.sqrt(Math.pow(Math.abs(p1.x - p2.x), 2) + Math.pow(Math.abs(p1.y - p2.y), 2));
+        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
     }
 
 }
