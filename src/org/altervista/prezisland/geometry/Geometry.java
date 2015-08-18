@@ -59,32 +59,24 @@ public final class Geometry {
         gui = new GeomGUI();
         gui.setVisible(true);
 
-        // Convolution test
-        Polygon p1 = new Polygon(HEXAGON1);
-        p1.traslate(75, 100);
-        Polygon p2 = new Polygon(SQUARE1);
-        p2.traslate(100, 100);
-        gui.addShape(p1);
-        gui.addShape(p2);
-        //     gui.addShape(MinkowskiSum.bruteMinkowskiSumConvex(p1, p2));
-        //     gui.addShape(MinkowskiSum.minkowskiSumConvex(p1, p2));
 
-        Line dir = /*new Line(0, 0,1000000000, -1)*/DIR_BISECT;
+
+       /* Line dir = DIR_BISECT;
         boolean or = true;
         double result = CollisionDetection.getPenetrationDepth(
-                p1, p2, dir, or, gui);
-        Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, dir, or, gui);
+                p1, p2, dir, or);
+        Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, dir, or);
         System.out.println("Result: " + result + " " + vect);
         Point2D.Double base = p1.getPoints().get(0);
         dir.traslate(base);
-        Point2D.Double shift = dir.shiftPoint(base, result);
+        Point2D.Double shift = dir.shiftAlongLine(base, result);
         if (or) {
             p1.traslate(-shift.x + base.x, -shift.y + base.y);
         } else {
             p1.traslate(shift.x - base.x, shift.y - base.y);
 
         }
-        gui.repaint();
+        gui.repaint();*/
     }
 
     public static void main(String[] args) {

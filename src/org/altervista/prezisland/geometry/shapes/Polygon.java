@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.altervista.prezisland.geometry.CartesianVector;
+import org.altervista.prezisland.geometry.Geometry;
 
 /**
  * Polygon represented by an array of points, which are linked by edges in a
@@ -184,5 +185,14 @@ public class Polygon {
                     points.get(i + 1).x, points.get(i + 1).y);
         }
         return edges;
+    }
+    
+    public boolean isConvex(){
+        for (int i = 1; i < points.size()-1; i++) {
+            if(!Geometry.isLeftTurn(points.get(i-1), points.get(i), points.get(i+1))){
+                return false;
+            }
+        }   
+        return true;
     }
 }

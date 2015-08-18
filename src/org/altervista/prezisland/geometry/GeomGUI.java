@@ -34,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
+import javax.swing.SwingUtilities;
+import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 
 /**
  *
@@ -42,13 +45,21 @@ import java.util.List;
 public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     private static final int POINT_HALFWIDTH = 2;
-    private static final double ORIGIN_X_OFFSET = 300, ORIGIN_Y_OFFSET = 200;
-    private Polygon activePoly;
+    private static final double ORIGIN_X_OFFSET = 100, ORIGIN_Y_OFFSET = 100;
+    private static final Color TOGGLE_BTN_COLOR = new Color(153, 204, 255),
+            TOGGLE_BTN_RUNNING_COLOR = new Color(151, 247, 175),
+            TOGGLE_BTN_SELECTED_COLOR = Color.GRAY;
     private Point2D.Double origin;
     private final LinkedList<Polygon> shapes;
+    private final Stack<LinkedList<Polygon>> shapeStack;
     private final LinkedList<Point2D.Double> points;
     private final LinkedList<Point2D.Double> vectors;
+    private final LinkedList<Point2D.Double> pointBuffer; // used to draw on the gui   
     private final LinkedList<Line> lines;
+    private Line direction;
+    private boolean dirOrientation;
+    private boolean drawPoly, drawDir, stepMode;
+    private volatile boolean stepAvailable;
 
     /**
      * Creates new form GeomGUI
@@ -56,11 +67,21 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public GeomGUI() {
         initComponents();
         shapes = new LinkedList<>();
-        activePoly = null;
+        shapeStack = new Stack<>();
         points = new LinkedList<>();
         origin = new Point2D.Double(0, drawPanel.getHeight());
         vectors = new LinkedList<>();
+        pointBuffer = new LinkedList<>();
         lines = new LinkedList<>();
+        drawPoly = false;
+        drawDir = false;
+        stepMode = false;
+        stepAvailable = false;
+        direction = null;
+        dirOrientation = true;
+        drawPanel.addMouseListener(this);
+        stepBtn.setEnabled(false);
+
         //  controlsPanel.setVisible(false);
     }
 
@@ -81,6 +102,9 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         for (Line l : lines) {
             drawLine(l, drawPanel.getGraphics());
         }
+        if (direction != null) {
+            drawLine(direction, drawPanel.getGraphics());
+        }
         for (Polygon s : shapes) {
             drawShape(s, drawPanel.getGraphics());
         }
@@ -88,6 +112,9 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
             drawVector(drawPanel.getGraphics(), (int) p.x, (int) p.y);
         }
         for (Point2D.Double p : points) {
+            drawPoint(p, drawPanel.getGraphics());
+        }
+        for (Point2D.Double p : pointBuffer) {
             drawPoint(p, drawPanel.getGraphics());
         }
         // drawOrigin();
@@ -101,10 +128,6 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         points.add(p);
     }
 
-    public void clearPoints() {
-        points.clear();
-    }
-
     public void addVector(Point2D.Double p) {
         vectors.add(p);
     }
@@ -113,15 +136,31 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         lines.add(l);
     }
 
+    public void pushStack() {
+        shapeStack.push(new LinkedList<>(shapes));
+        shapes.clear();
+    }
+
+    public void popStack() {
+        shapes.clear();
+        shapes.addAll(shapeStack.pop());
+    }
+
+    public void clearPoints() {
+        points.clear();
+    }
+
     public void clearLines() {
         lines.clear();
     }
-    
-    public void clearAll(){
+
+    public void clearAll() {
         shapes.clear();
         points.clear();
         vectors.clear();
         lines.clear();
+        direction = null;
+        pointBuffer.clear();
     }
 
     private CartesianVector getPenetrationVector(Polygon s1, Polygon s2) {
@@ -383,6 +422,23 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         return origin.x + x;
     }
 
+    private double swingToCartX(double x) {
+        return x - origin.x;
+    }
+
+    private double swingToCartY(double y) {
+        return origin.y - y;
+    }
+
+    public boolean step() {
+        if (stepMode) {
+            System.out.println(stepAvailable);
+            return stepAvailable;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -394,6 +450,11 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
         drawPanel = new javax.swing.JPanel();
         controlsPanel = new javax.swing.JPanel();
+        drawPolyTBtn = new javax.swing.JToggleButton();
+        resetBtn = new javax.swing.JButton();
+        drawDirTBtn = new javax.swing.JButton();
+        runBtn = new javax.swing.JButton();
+        stepBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Geometry GUI");
@@ -429,15 +490,79 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         controlsPanel.setMinimumSize(new java.awt.Dimension(200, 100));
         controlsPanel.setPreferredSize(new java.awt.Dimension(800, 100));
 
+        drawPolyTBtn.setBackground(new java.awt.Color(153, 204, 255));
+        drawPolyTBtn.setForeground(new java.awt.Color(0, 0, 0));
+        drawPolyTBtn.setText("Draw Polygon");
+        drawPolyTBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                drawPolyTBtnActionPerformed(evt);
+            }
+        });
+
+        resetBtn.setBackground(new java.awt.Color(255, 153, 153));
+        resetBtn.setForeground(new java.awt.Color(0, 0, 0));
+        resetBtn.setText("RESET");
+        resetBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetBtnActionPerformed(evt);
+            }
+        });
+
+        drawDirTBtn.setBackground(new java.awt.Color(153, 204, 255));
+        drawDirTBtn.setForeground(new java.awt.Color(0, 0, 0));
+        drawDirTBtn.setText("Draw Direction");
+        drawDirTBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                drawDirTBtnActionPerformed(evt);
+            }
+        });
+
+        runBtn.setBackground(new java.awt.Color(153, 204, 255));
+        runBtn.setForeground(new java.awt.Color(0, 0, 0));
+        runBtn.setText("Run");
+        runBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runBtnActionPerformed(evt);
+            }
+        });
+
+        stepBtn.setBackground(new java.awt.Color(204, 255, 204));
+        stepBtn.setText("Step");
+        stepBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout controlsPanelLayout = new javax.swing.GroupLayout(controlsPanel);
         controlsPanel.setLayout(controlsPanelLayout);
         controlsPanelLayout.setHorizontalGroup(
             controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 788, Short.MAX_VALUE)
+            .addGroup(controlsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(drawDirTBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(drawPolyTBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(runBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(resetBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(stepBtn)
+                .addContainerGap(534, Short.MAX_VALUE))
         );
         controlsPanelLayout.setVerticalGroup(
             controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 78, Short.MAX_VALUE)
+            .addGroup(controlsPanelLayout.createSequentialGroup()
+                .addGroup(controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(drawPolyTBtn)
+                    .addComponent(resetBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(controlsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(drawDirTBtn)
+                    .addComponent(runBtn)
+                    .addComponent(stepBtn))
+                .addGap(0, 23, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -459,6 +584,122 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void drawPolyTBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawPolyTBtnActionPerformed
+        if (drawPoly) {
+            drawPolyTBtn.setBackground(TOGGLE_BTN_COLOR);
+            if (pointBuffer.size() > 2) {
+                Polygon poly = new Polygon(pointBuffer);
+                if (poly.isConvex()) {
+                    shapes.add(poly);
+                } else {
+                    System.err.println("The polygon is not convex.");
+                }
+            }
+            pointBuffer.clear();
+            repaint();
+        } else {
+            drawPolyTBtn.setBackground(TOGGLE_BTN_RUNNING_COLOR);
+            pointBuffer.clear();
+            if (drawDir) {
+                drawDir = false;
+            }
+        }
+
+        drawPoly = !drawPoly;
+    }//GEN-LAST:event_drawPolyTBtnActionPerformed
+
+    private void drawDirTBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawDirTBtnActionPerformed
+        drawDir = !drawDir;
+        drawDirTBtn.setBackground(TOGGLE_BTN_RUNNING_COLOR);
+        pointBuffer.clear();
+        if (drawPoly) {
+            drawPoly = false;
+        }
+    }//GEN-LAST:event_drawDirTBtnActionPerformed
+
+    private void resetBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtnActionPerformed
+        clearAll();
+        drawDir = false;
+        drawPoly = false;
+        drawDirTBtn.setSelected(false);
+        drawPolyTBtn.setSelected(false);
+        drawDirTBtn.setBackground(TOGGLE_BTN_COLOR);
+        drawPolyTBtn.setBackground(TOGGLE_BTN_COLOR);
+        repaint();
+    }//GEN-LAST:event_resetBtnActionPerformed
+
+    private void runBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runBtnActionPerformed
+        if (shapes.size() >= 2) {
+            if (shapes.size() > 2) {
+                System.out.println("Warning: more than two polygons are present."
+                        + " The first two will be used for the algorithm");
+            }
+            final Polygon p1 = shapes.get(0),
+                    p2 = shapes.get(1);
+            if (direction != null) {
+                if (p1.isConvex() && p2.isConvex()) {
+                    System.out.println("Running");
+                    stepMode = true;
+                    System.out.println("enabled");
+                    stepBtn.setEnabled(true);
+                    repaint();
+                    // All is set: run the algorithm
+                    final GeomGUI gui = this;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            CollisionDetection.getPenetrationVectorStep(p1, p2, direction, dirOrientation, gui);
+                          //  stepMode = false;
+                        }
+                    });
+
+                   /* while (stepMode) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            System.out.println(ex.getMessage());
+                        }
+                    }*/
+
+                    Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, direction, dirOrientation, this);
+                    System.out.println("\n\nPenetration vector: " + vect);
+                    // Resolve the collision
+                    Point2D.Double base = p1.getPoints().get(0);
+                    direction.traslate(base);
+                    double length = //new CartesianVector(vect.x, vect.y).getLength();
+                            CollisionDetection.getPenetrationDepth(
+                                    p1, p2, direction, dirOrientation, this);
+                    System.out.println("Penetration depth: " + length);
+                    Point2D.Double shift = direction.shiftAlongLine(base, length);
+                    System.out.println("Shift: " + shift);
+                    // clearAll();
+                    points.add(shift);
+                /*    if (dirOrientation) {
+                        p1.traslate(-shift.x + base.x, -shift.y + base.y);
+                    } else {
+                        p1.traslate(shift.x - base.x, shift.y - base.y);
+                    }
+                    stepMode = false;
+                    stepBtn.setEnabled(false);
+                    repaint();*/
+                    System.out.println("Done.");
+                } else {
+                    System.err.println("At least one polygon is not convex.");
+                }
+            } else {
+                System.err.println("The algorithm requires a (movement) direction to run.");
+            }
+        } else {
+            System.err.println("The algorithm requires two polygons to run.");
+        }
+
+        //resetBtn.doClick();
+    }//GEN-LAST:event_runBtnActionPerformed
+
+    private void stepBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepBtnActionPerformed
+        stepAvailable = true;
+    }//GEN-LAST:event_stepBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -497,7 +738,12 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel controlsPanel;
+    private javax.swing.JButton drawDirTBtn;
     private javax.swing.JPanel drawPanel;
+    private javax.swing.JToggleButton drawPolyTBtn;
+    private javax.swing.JButton resetBtn;
+    private javax.swing.JButton runBtn;
+    private javax.swing.JButton stepBtn;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -507,17 +753,33 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        Point2D p = e.getPoint();
-        if (activePoly != null) {
-            ArrayList<Point2D.Double> pts = activePoly.getPoints();
-            double offsetX = p.getX() - pts.get(0).x,
-                    offsetY = p.getY() - pts.get(0).y;
-            activePoly.traslate(offsetX, offsetY);
-        }
+
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if (drawPoly || drawDir) {
+            pointBuffer.add(new Point2D.Double(swingToCartX(e.getX()), swingToCartY(e.getY())));
+            repaint();
+        }
+        if (drawDir && pointBuffer.size() == 2) {
+            // Build direction
+            Point2D.Double p1 = pointBuffer.get(0),
+                    p2 = pointBuffer.get(1);
+            if (p1 != p2) {
+                direction = new Line(p1, p2);
+                dirOrientation = Geometry.compareLexicographicallyX(p1, p2) < 0;
+                repaint();
+            } else {
+                System.err.println("Error while drawing a direction: the points "
+                        + "inputted are equal.");
+            }
+
+            drawDirTBtn.setSelected(false);
+            drawDir = false;
+            pointBuffer.clear();
+            drawDirTBtn.setBackground(TOGGLE_BTN_COLOR);
+        }
 
     }
 

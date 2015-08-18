@@ -217,7 +217,7 @@ public class Line {
         return testAgainst(p) == Position.COLLIDES;
     }
 
-    public Point2D.Double shiftPoint(Point2D.Double p, double distance) {
+    public Point2D.Double shiftAlongLine(Point2D.Double p, double distance) {
         if (!contains(p)) {
             return null;
         }

@@ -199,6 +199,272 @@ public class CollisionDetection {
         }
     }
 
+    public static void step(GeomGUI gui) {
+        System.out.print("Stepping... ");
+        while (!gui.step()) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        System.out.println("Stepped.");
+    }
+
+    public static Point2D.Double getPenetrationVectorStep(final Polygon P1, final Polygon P2,
+            Line d, boolean orient, GeomGUI gui) {
+
+        step(gui);
+        // Duplicate polygons to avoid conflicts
+        Polygon P = new Polygon(P1), Q = new Polygon(P2);
+        // Reference point for P
+        Point2D.Double x = P.getPoints().get(0);
+        x = new Point2D.Double(x.x, x.y);
+        // Reference point for Q
+        Point2D.Double y = Q.getPoints().get(0);
+        y = new Point2D.Double(y.x, y.y);
+
+        // Normalize polygons to the origin
+        P.traslate(-x.x, -x.y);
+        Q.traslate(-y.x, -y.y);
+        gui.pushStack();
+        gui.addShape(P);
+        gui.addShape(Q);
+
+        step(gui);
+        gui.popStack();
+
+        int i = -1, j = -1;
+        double max = 0, min = Double.MAX_VALUE;
+        for (int k = 0; k < P1.getPointsNumber(); k++) {
+            Point2D.Double p = P1.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int pMin = j, pMax = i;
+
+        i = -1;
+        j = -1;
+        max = 0;
+        min = Double.MAX_VALUE;
+        for (int k = 0; k < P2.getPointsNumber(); k++) {
+            Point2D.Double p = P2.getPoints().get(k);
+            if (p.y > max) {
+                max = p.y;
+                i = k;
+            }
+            if (p.y < min) {
+                min = p.y;
+                j = k;
+            }
+        }
+        int qMin = j, qMax = i;
+
+        // Left shadow of P
+        Polygon lsP = getLeftShadow(P, pMax, pMin);
+        // Right shadow of Q (inverted)
+        Polygon rsiQ = getRightShadowInv(Q, qMax, qMin);
+        // Left shadow of Q
+        Polygon lsQ = getLeftShadow(Q, qMax, qMin);
+        // Right shadow of P (inverted)
+        Polygon rsiP = getRightShadowInv(P, pMax, pMin);
+        // w = y - x   <- the point to test the shadows' convolution against
+        // y = left shadow reference point
+        // x = right shadow reference point
+        Point2D.Double w1 = new Point2D.Double(y.x - x.x, y.y - x.y);
+        Point2D.Double w2 = new Point2D.Double(x.x - y.x, x.y - y.y);
+
+        // Test : horizontal direction
+        Line d1 = new Line(d), d2 = new Line(d);
+        d1.traslate(w1);
+        d2.traslate(w2);
+
+        System.out.println("\n\n --- TEST 1 --- \n\n");
+        Point2D.Double pen1 = penVect(lsP, rsiQ, w1, d1, orient, gui);
+        if (pen1.x == 0 && pen1.y == 0) {
+            //  gui.clearAll();
+            System.out.println("\n\n --- TEST 2 --- \n\n");
+            return penVect(lsQ, rsiP, w2, d2, !orient, gui);
+        } else {
+            return pen1;
+        }
+    }
+
+    /**
+     * Algorithm to calculate the directional penetration depth between two
+     * convex polygons, based on an algorithm by Guibas and Stolfi.
+     *
+     * @param A Left shadow of a Polygon
+     * @param B Inverted right shadow of a Polygon
+     * @param w Position vector (difference between A and B's position vectors)
+     * @param d Direction of penetration ( as a Line )
+     * @param orient Orientation of the direction ray d
+     * @param gui GeomGui
+     * @return Point representing the penetration vector
+     */
+    public static Point2D.Double penVectStep(Polygon A, Polygon B, Point2D.Double w, Line d,
+            boolean orient, GeomGUI gui) {
+        /*System.out.println("A: " + A.getPoints());
+         System.out.println("B: " + B.getPoints());
+         System.out.println("w: " + w);
+         System.out.println("Direction: " + d);*/
+        //    gui.clearAll();
+        //  gui.addLine(d);
+        // gui.addShape(A);
+        // gui.addShape(B);
+        //   gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        //   gui.addVector(w);
+        //throw new RuntimeException("Stop");
+
+        // Loop until a shadow is reduced to a single vertex
+        while (A.getPointsNumber() > 1 && B.getPointsNumber() > 1) {
+            // Median point indexes
+            int i = (A.getPoints().size() - 1) / 2,
+                    j = (B.getPoints().size() - 1) / 2;
+            // Make sure not to go out of bounds
+            if (i == A.getPointsNumber() - 1) {
+                i--;
+            }
+            if (j == B.getPointsNumber() - 1) {
+                j--;
+            }
+            System.out.println("\nSizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
+            // Check if the segments starting from i and j are in slope order
+            if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
+                    > Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
+                int k = i;
+                i = j;
+                j = k;
+                Polygon C = A;
+                A = B;
+                B = C;
+            }
+            // Now assuming f and g are in slope order
+            // Calculate the displacement of f in the chain D: (Al*Bl -> f -> g -> Ah*Bh)
+            double f1X = A.getPoints().get(i).x + B.getPoints().get(j).x,
+                    f1Y = A.getPoints().get(i).y + B.getPoints().get(j).y;
+
+            double f2X = f1X + (A.getPoints().get(i + 1).x - A.getPoints().get(i).x),
+                    f2Y = f1Y + (A.getPoints().get(i + 1).y - A.getPoints().get(i).y);
+
+            // g1 == f2
+            double g2X = f2X + (B.getPoints().get(j + 1).x - B.getPoints().get(j).x),
+                    g2Y = f2Y + (B.getPoints().get(j + 1).y - B.getPoints().get(j).y);
+
+            Line lineF = new Line(f1X, f1Y, f2X, f2Y),
+                    lineG = new Line(f2X, f2Y, g2X, g2Y);
+            Segment segF = new Segment(f1X, f1Y, f2X, f2Y),
+                    segG = new Segment(f2X, f2Y, g2X, g2Y);
+
+            System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
+            System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);
+            /*   gui.clearLines();
+             gui.addLine(lineF);
+             gui.addLine(lineG);*/
+            /*
+             ------------------------------------------------------------------
+             Check where the intersection lies
+             ------------------------------------------------------------------
+             */
+            Point2D.Double testF = lineF.testIntersection(d),
+                    testG = lineG.testIntersection(d);
+            // testIntersection() returns a Point or null
+
+            // Got at least one intersection
+            if (testF != null) {
+                /*
+                 Check the position of the intersection point relative to edge f
+                 Interesting cases:
+                 - testF is on f
+                 - testF is below f
+                 */
+                Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
+                System.out.println("posF: " + posF);
+                if ((!d.isVertical() && ((orient && testF.x >= w.x) || (!orient && testF.x <= w.x)))
+                        || (d.isVertical() && ((orient && testF.y >= w.y) || (!orient && testF.y <= w.y)))) {
+                    // Intersection is valid
+                    if (posF == Segment.Position.COLLIDES) {
+                        // GOTCHA!
+                        Point2D.Double out = new Point2D.Double(Math.abs(testF.x - w.x), Math.abs(testF.y - w.y));
+                        System.out.println("GOTCHA! " + out);
+                        return out;
+                    } else if (posF == Segment.Position.COLLINEAR_BELOW) {
+                        // Intersection below f: g and Bh can be removed
+                        System.out.println("BELOW");
+                        B = new Polygon(B.getPoints().subList(0, j + 1));
+                        System.out.println("B shortened to " + B.getPointsNumber());
+                        continue;
+                    }
+                } else {
+                    // Intersection generated from the line, not the ray: discard it.
+                    System.out.println("Intersection for f invalid.");
+                }
+            }
+            if (testG != null) {
+                /*
+                 Check the position of the intersection point relative to edge g
+                 Interesting cases:
+                 - testG is on g
+                 - testG is above g
+                 */
+                Segment.Position posG = (Segment.Position) segG.testAgainst(testG);
+                System.out.println("posG: " + posG);
+                if ((!d.isVertical() && ((orient && testG.x >= w.x) || (!orient && testG.x <= w.x)))
+                        || (d.isVertical() && ((orient && testG.y >= w.y) || (!orient && testG.y <= w.y)))) {
+                    // Intersection is valid
+                    if (posG == Segment.Position.COLLIDES) {
+                        // GOTCHA!
+                        Point2D.Double out = new Point2D.Double(Math.abs(testG.x - w.x), Math.abs(testG.y - w.y));
+                        System.out.println("GOTCHA! " + out);
+                        return out;
+                    } else if (posG == Segment.Position.COLLINEAR_ABOVE) {
+                        // Intersection above g: f and Al can be removed
+                        System.out.println("ABOVE");
+                        // Drop Al and f
+                        A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
+                        System.out.println("A shortened to " + A.getPointsNumber());
+                        continue;
+                    }
+                } else {
+                    // Intersection generated from the line, not the ray: discard it.
+                    System.out.println("Intersection for g invalid.");
+                }
+            }
+
+            // No valid intersection
+            if (d.isVertical()) {
+                if (orient) {
+                    System.out.println("ABOVE_VERT");
+                    // Drop Al and f
+                    A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
+                    System.out.println("A shortened to " + A.getPointsNumber());
+                    continue;
+                } else {
+                    System.out.println("BELOW_VERT");
+                    B = new Polygon(B.getPoints().subList(0, j + 1));
+                    System.out.println("B shortened to " + B.getPointsNumber());
+                    continue;
+                }
+            }
+
+            //throw new RuntimeException("No valid intersection!");
+            System.out.println("No valid intersection!");
+            return new Point2D.Double(0, 0);
+
+        }// End while loop
+
+        // None of the above cases triggered
+        System.out.println("???2");
+        //throw new RuntimeException("???2");
+        return new Point2D.Double(0, 0);
+    }
+
     public static double getGuiPenAm(Polygon P1, Polygon P2, GeomGUI gui) {
         Polygon P = new Polygon(P1), Q = new Polygon(P2);
         // Reference point for P
@@ -673,11 +939,11 @@ public class CollisionDetection {
          System.out.println("w: " + w);
          System.out.println("Direction: " + d);*/
         //    gui.clearAll();
-        gui.addLine(d);
+        //  gui.addLine(d);
         // gui.addShape(A);
         // gui.addShape(B);
-        gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
-        gui.addVector(w);
+        //   gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        //   gui.addVector(w);
         //throw new RuntimeException("Stop");
 
         // Loop until a shadow is reduced to a single vertex
