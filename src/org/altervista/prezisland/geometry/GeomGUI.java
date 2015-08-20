@@ -23,10 +23,13 @@
  */
 package org.altervista.prezisland.geometry;
 
+import java.awt.BasicStroke;
 import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -36,6 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 
 /**
@@ -45,7 +49,7 @@ import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     private static final int POINT_HALFWIDTH = 2;
-    private static final double ORIGIN_X_OFFSET = 100, ORIGIN_Y_OFFSET = 100;
+    private static final double ORIGIN_X_OFFSET = 300, ORIGIN_Y_OFFSET = 200;
     private static final Color TOGGLE_BTN_COLOR = new Color(153, 204, 255),
             TOGGLE_BTN_RUNNING_COLOR = new Color(151, 247, 175),
             TOGGLE_BTN_SELECTED_COLOR = Color.GRAY;
@@ -102,7 +106,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         for (Line l : lines) {
             drawLine(l, drawPanel.getGraphics());
         }
-        if (direction != null) {
+        if (direction != null && !stepMode) {
             drawLine(direction, drawPanel.getGraphics());
         }
         for (Polygon s : shapes) {
@@ -117,7 +121,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         for (Point2D.Double p : pointBuffer) {
             drawPoint(p, drawPanel.getGraphics());
         }
-        // drawOrigin();
+        drawOrigin();
     }
 
     public void addShape(Polygon s) {
@@ -152,6 +156,14 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     public void clearLines() {
         lines.clear();
+    }
+
+    public void clearVectors() {
+        vectors.clear();
+    }
+
+    public void clearShapes() {
+        shapes.clear();
     }
 
     public void clearAll() {
@@ -355,19 +367,35 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
          }
          }*/
         g.setColor(Color.lightGray);
-        for (int i = 0; i < drawPanel.getWidth(); i += 50) {
-            for (int j = (int) origin.y; j > -50; j -= 50) {
+        for (int i = 0; i < drawPanel.getWidth(); i += 10) {
+            for (int j = drawPanel.getHeight(); j > -50; j -= 10) {
                 g.drawLine(i, j, i + drawPanel.getWidth(), j);
                 g.drawLine(i, j, i, j + drawPanel.getHeight());
             }
         }
+
         g.setColor(Color.gray);
-        for (int i = 0; i < drawPanel.getWidth(); i += 100) {
-            for (int j = (int) origin.y; j > -100; j -= 100) {
+        for (int i = 0; i < drawPanel.getWidth(); i += 50) {
+            for (int j = drawPanel.getHeight(); j > -50; j -= 50) {
                 g.drawLine(i, j, i + drawPanel.getWidth(), j);
                 g.drawLine(i, j, i, j + drawPanel.getHeight());
             }
         }
+
+        g.setColor(Color.black);
+        for (int i = 0; i < drawPanel.getWidth(); i += 100) {
+            for (int j = drawPanel.getHeight(); j > -100; j -= 100) {
+                g.drawLine(i, j, i + drawPanel.getWidth(), j);
+                g.drawLine(i, j, i, j + drawPanel.getHeight());
+            }
+        }
+
+        Graphics2D g2d = (Graphics2D) g;
+        Stroke strk = g2d.getStroke();
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawLine(-100, (int) origin.y, drawPanel.getWidth() + 10, (int) origin.y);
+        g2d.drawLine((int) origin.x, -100, (int) origin.x, drawPanel.getHeight() + 10);
+        g2d.setStroke(strk);
     }
 
     private void drawVector(Graphics g, int x1, int y1, int x2, int y2) {
@@ -430,13 +458,14 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         return origin.y - y;
     }
 
-    public boolean step() {
-        if (stepMode) {
-            System.out.println(stepAvailable);
-            return stepAvailable;
-        } else {
-            return false;
+    public synchronized boolean step() {
+        //   if (stepMode) {
+        if (stepAvailable) {
+            stepAvailable = false;           
+            return true;
         }
+        //}
+        return false;
     }
 
     /**
@@ -646,44 +675,65 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
                     repaint();
                     // All is set: run the algorithm
                     final GeomGUI gui = this;
-                    SwingUtilities.invokeLater(new Runnable() {
+
+                    SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
                         @Override
-                        public void run() {
-                            CollisionDetection.getPenetrationVectorStep(p1, p2, direction, dirOrientation, gui);
-                          //  stepMode = false;
-                        }
-                    });
+                        protected Void doInBackground() throws Exception {
+                            Point2D.Double ret = CollisionDetection.getPenetrationVectorStep(p1, p2, direction, dirOrientation, gui);
+                            Point2D.Double base = p1.getPoints().get(0);
+                            direction.traslate(base);
+                            double length
+                                    = /*CollisionDetection.getPenetrationDepth(
+                                            p1, p2, direction, dirOrientation, gui)*/ 
+                                    Math.sqrt(Math.pow(ret.x, 2)+Math.pow(ret.y, 2));
+                            System.out.println("Pen vect: " + ret + "; length: " + (Math.sqrt(Math.pow(ret.x, 2) + Math.pow(ret.y, 2))));
+                            System.out.println("Penetration depth: " + length);
+                            Point2D.Double shift = direction.shiftAlongLine(base, length);
 
-                   /* while (stepMode) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ex) {
-                            System.out.println(ex.getMessage());
-                        }
-                    }*/
+                            clearLines();
+                            clearVectors();
+                            clearPoints();
+                            popStack();
+                            addVector(ret);
+                            while(!step()){
+                                Thread.sleep(200);
+                            }
+                            clearVectors();
 
-                    Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, direction, dirOrientation, this);
-                    System.out.println("\n\nPenetration vector: " + vect);
+                            if (dirOrientation) {
+                                p1.traslate(-shift.x + base.x, -shift.y + base.y);
+                            } else {
+                                p1.traslate(shift.x - base.x, shift.y - base.y);
+                            }
+                            System.out.println("finalizing.");
+                            repaint();
+                            stepMode = false;
+                            stepAvailable = false;
+                            stepBtn.setEnabled(false);
+                            System.out.println("Done.\n---------------------------------------------------------------");
+                            return null;
+                        }
+                    };
+
+                    worker.execute();
+
+                    //   Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, direction, dirOrientation, this);
+                    //    System.out.println("\n\nPenetration vector: " + vect);
                     // Resolve the collision
-                    Point2D.Double base = p1.getPoints().get(0);
-                    direction.traslate(base);
-                    double length = //new CartesianVector(vect.x, vect.y).getLength();
-                            CollisionDetection.getPenetrationDepth(
-                                    p1, p2, direction, dirOrientation, this);
-                    System.out.println("Penetration depth: " + length);
-                    Point2D.Double shift = direction.shiftAlongLine(base, length);
-                    System.out.println("Shift: " + shift);
-                    // clearAll();
-                    points.add(shift);
-                /*    if (dirOrientation) {
-                        p1.traslate(-shift.x + base.x, -shift.y + base.y);
-                    } else {
-                        p1.traslate(shift.x - base.x, shift.y - base.y);
-                    }
-                    stepMode = false;
-                    stepBtn.setEnabled(false);
-                    repaint();*/
-                    System.out.println("Done.");
+                   /* Point2D.Double base = p1.getPoints().get(0);
+                     direction.traslate(base);
+                     double length = 
+                     CollisionDetection.getPenetrationDepth(
+                     p1, p2, direction, dirOrientation, this);
+                     System.out.println("Penetration depth: " + length);
+                     Point2D.Double shift = direction.shiftAlongLine(base, length);
+                     System.out.println("Shift: " + shift);
+                     if (dirOrientation) {
+                     p1.traslate(-shift.x + base.x, -shift.y + base.y);
+                     } else {
+                     p1.traslate(shift.x - base.x, shift.y - base.y);
+                     }*/
                 } else {
                     System.err.println("At least one polygon is not convex.");
                 }
@@ -698,7 +748,9 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     }//GEN-LAST:event_runBtnActionPerformed
 
     private void stepBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepBtnActionPerformed
-        stepAvailable = true;
+        synchronized (this) {
+            stepAvailable = true;
+        }
     }//GEN-LAST:event_stepBtnActionPerformed
 
     /**
@@ -769,6 +821,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
             if (p1 != p2) {
                 direction = new Line(p1, p2);
                 dirOrientation = Geometry.compareLexicographicallyX(p1, p2) < 0;
+                //  System.out.println("Line drawn: "+direction+", "+dirOrientation);
                 repaint();
             } else {
                 System.err.println("Error while drawing a direction: the points "

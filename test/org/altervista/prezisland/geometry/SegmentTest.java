@@ -54,6 +54,7 @@ public class SegmentTest {
     @Test
     public void testTestAgainst() {
         System.out.println(" --- testAgainst --- ");
+
         Segment instance = new Segment(-1, -1, 1, 1);
         Point2D.Double[] points = {new Point2D.Double(0, 1), new Point2D.Double(0, -1),
             new Point2D.Double(1, 1), new Point2D.Double(2, 2), new Point2D.Double(-2, -2)};
@@ -68,6 +69,14 @@ public class SegmentTest {
             assertEquals(expResults[i], result);
         }
 
+        {
+            instance = new Segment(1, 0, -1, 0);
+            System.out.println("testing " + instance + " against point (2,0)");
+            Segment.Position result = (Segment.Position) instance.testAgainst(new Point2D.Double(2, 0));
+            System.out.println("Expected: c_b, result: "+result);
+            assertEquals(Segment.Position.COLLINEAR_BELOW, result);
+        }
+        
         instance = new Segment(-1, 0, 1, 0);
         points = new Point2D.Double[]{new Point2D.Double(0, 1), new Point2D.Double(0, -1),
             new Point2D.Double(-1, 0), new Point2D.Double(2, 0), new Point2D.Double(-2, 0)};

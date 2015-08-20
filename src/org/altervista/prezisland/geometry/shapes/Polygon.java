@@ -45,7 +45,7 @@ public class Polygon {
 
     public Polygon(Point2D.Double[] pts) {
         points = new ArrayList<>();
-        for(Point2D.Double p : pts){
+        for (Point2D.Double p : pts) {
             points.add(new Point2D.Double(p.x, p.y));
         }
         center = calculateCenter();
@@ -53,15 +53,15 @@ public class Polygon {
 
     public Polygon(Collection<Point2D.Double> pts) {
         points = new ArrayList<>();
-        for(Point2D.Double p : pts){
+        for (Point2D.Double p : pts) {
             points.add(new Point2D.Double(p.x, p.y));
         }
         center = calculateCenter();
     }
-    
-    public Polygon(Polygon p){
+
+    public Polygon(Polygon p) {
         points = new ArrayList<>();
-        for(Point2D.Double pp : p.getPoints()){
+        for (Point2D.Double pp : p.getPoints()) {
             points.add(new Point2D.Double(pp.x, pp.y));
         }
         center = calculateCenter();
@@ -79,8 +79,43 @@ public class Polygon {
          for(Point2D p : points){
          System.out.print(p+";");
          }*/
-    }   
-    
+    }
+
+    /**
+     * This method orders the polygon's points so that the first has the minimum
+     * y
+     */
+    public void normalizePointOrder() {
+        // Make sure the first vertex has minimum y
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        int i = 0, index = -1;
+        for (Point2D.Double p : points) {
+            // if (p.y > maxY || (p.y == maxY && p.x < minX)) {
+            if (p.y < minY || (p.y == minY && p.x < minX)) {
+                minX = p.x;
+                minY = p.y;
+                index = i;
+            }
+            i++;
+        }
+        if (index != 0) {
+            /*  System.out.println("original:");
+             for (Point2D.Double p : pts) {
+             System.out.print("(" + p.x + "," + p.y + ");");
+             }
+             System.out.println();*/
+            // shift vertices
+            for (int j = 0; j < index; j++) {
+                points.add(points.get(0));
+                points.remove(0);
+            }
+        }
+
+        /*    for (Point2D.Double p : pts) {
+         System.out.print("(" + p.x + "," + p.y + ");");
+         }
+         System.out.println();*/
+    }
 
     /**
      * Calculates the center of this generic Shape by enclosing it in a bounding
@@ -105,7 +140,7 @@ public class Polygon {
             }
         }
         double w = maxX - minX, h = maxY - minY;
-    //    System.out.println("center: " + new Point2D.Double(minX + w / 2, minY + h / 2));
+        //    System.out.println("center: " + new Point2D.Double(minX + w / 2, minY + h / 2));
         return new Point2D.Double(minX + w / 2, minY + h / 2);
     }
 
@@ -186,13 +221,13 @@ public class Polygon {
         }
         return edges;
     }
-    
-    public boolean isConvex(){
-        for (int i = 1; i < points.size()-1; i++) {
-            if(!Geometry.isLeftTurn(points.get(i-1), points.get(i), points.get(i+1))){
+
+    public boolean isConvex() {
+        for (int i = 1; i < points.size() - 1; i++) {
+            if (!Geometry.isLeftTurn(points.get(i - 1), points.get(i), points.get(i + 1))) {
                 return false;
             }
-        }   
+        }
         return true;
     }
 }

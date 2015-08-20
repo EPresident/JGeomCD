@@ -27,6 +27,8 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.altervista.prezisland.geometry.GeomGUI;
 import org.altervista.prezisland.geometry.Geometry;
 import org.altervista.prezisland.geometry.Line;
@@ -200,23 +202,31 @@ public class CollisionDetection {
     }
 
     public static void step(GeomGUI gui) {
-        System.out.print("Stepping... ");
-        while (!gui.step()) {
+        boolean step = false;
+        //   System.out.println("stepping");
+        while (!step) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(100);
+                synchronized (gui) {
+                    step = gui.step();
+                }
             } catch (InterruptedException ex) {
                 System.out.println(ex.getMessage());
             }
         }
-        System.out.println("Stepped.");
+        //  System.out.println("stepped");
+        //Thread.currentThread().notifyAll();
     }
 
     public static Point2D.Double getPenetrationVectorStep(final Polygon P1, final Polygon P2,
             Line d, boolean orient, GeomGUI gui) {
-
+        System.out.println("Running getPenetrationVectorStep()");
         step(gui);
+        gui.pushStack();
         // Duplicate polygons to avoid conflicts
         Polygon P = new Polygon(P1), Q = new Polygon(P2);
+        P.normalizePointOrder();
+        Q.normalizePointOrder();
         // Reference point for P
         Point2D.Double x = P.getPoints().get(0);
         x = new Point2D.Double(x.x, x.y);
@@ -227,12 +237,11 @@ public class CollisionDetection {
         // Normalize polygons to the origin
         P.traslate(-x.x, -x.y);
         Q.traslate(-y.x, -y.y);
-        gui.pushStack();
         gui.addShape(P);
         gui.addShape(Q);
-
+        gui.repaint();
+        System.out.println("Drawn norm polys");
         step(gui);
-        gui.popStack();
 
         int i = -1, j = -1;
         double max = 0, min = Double.MAX_VALUE;
@@ -285,15 +294,27 @@ public class CollisionDetection {
         d1.traslate(w1);
         d2.traslate(w2);
 
-        System.out.println("\n\n --- TEST 1 --- \n\n");
-        Point2D.Double pen1 = penVect(lsP, rsiQ, w1, d1, orient, gui);
-        if (pen1.x == 0 && pen1.y == 0) {
-            //  gui.clearAll();
-            System.out.println("\n\n --- TEST 2 --- \n\n");
-            return penVect(lsQ, rsiP, w2, d2, !orient, gui);
+        /* System.out.println("\n\n --- TEST 1 --- \n\n");
+         Point2D.Double pen1 = penVectStep(lsP, rsiQ, w1, d1, orient, gui);
+         System.out.println("\n\n --- TEST 2 --- \n\n");
+         Point2D.Double pen2 = penVectStep(lsQ, rsiP, w2, d2, !orient, gui);*/
+        if (orient) {
+            return penVectStep(lsP, rsiQ, w1, d1, orient, gui);
         } else {
-            return pen1;
+            return penVectStep(lsQ, rsiP, w2, d2, !orient, gui);
         }
+        /*   System.out.println(">>>> Pen1: " + Math.sqrt(Math.pow(pen1.x, 2) + Math.pow(pen1.y, 2)));
+         System.out.println(">>>> Pen2: " + Math.sqrt(Math.pow(pen2.x, 2) + Math.pow(pen2.y, 2)));
+         if (pen1.x == 0 && pen1.y == 0) {
+         //  gui.clearAll();
+         // System.out.println("\n\n --- TEST 2 --- \n\n");
+         return pen2;//penVectStep(lsQ, rsiP, w2, d2, !orient, gui);
+         } else {
+         if(Math.sqrt(Math.pow(pen1.x, 2) + Math.pow(pen1.y, 2))> Math.sqrt(Math.pow(pen2.x, 2) + Math.pow(pen2.y, 2))){
+         return pen2;
+         }
+         return pen1;
+         }*/
     }
 
     /**
@@ -310,17 +331,29 @@ public class CollisionDetection {
      */
     public static Point2D.Double penVectStep(Polygon A, Polygon B, Point2D.Double w, Line d,
             boolean orient, GeomGUI gui) {
-        /*System.out.println("A: " + A.getPoints());
-         System.out.println("B: " + B.getPoints());
-         System.out.println("w: " + w);
-         System.out.println("Direction: " + d);*/
-        //    gui.clearAll();
-        //  gui.addLine(d);
-        // gui.addShape(A);
-        // gui.addShape(B);
-        //   gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
-        //   gui.addVector(w);
-        //throw new RuntimeException("Stop");
+        System.out.println("Running penVectStep()");
+        // Draw shadows
+        gui.clearLines();
+        gui.clearVectors();
+        gui.clearShapes();
+
+        gui.addShape(A);
+        gui.addShape(B);
+        gui.addVector(w);
+        gui.addLine(d);
+        gui.repaint();
+
+        step(gui);
+        gui.clearLines();
+        gui.clearVectors();
+        gui.clearShapes();
+
+        gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+        gui.addVector(w);
+        gui.addLine(d);
+        gui.repaint();
+
+        step(gui);
 
         // Loop until a shadow is reduced to a single vertex
         while (A.getPointsNumber() > 1 && B.getPointsNumber() > 1) {
@@ -334,7 +367,6 @@ public class CollisionDetection {
             if (j == B.getPointsNumber() - 1) {
                 j--;
             }
-            System.out.println("\nSizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
             // Check if the segments starting from i and j are in slope order
             if (Geometry.getNormalizedAngle(A.getPoints().get(i), A.getPoints().get(i + 1))
                     > Geometry.getNormalizedAngle(B.getPoints().get(j), B.getPoints().get(j + 1))) {
@@ -346,6 +378,11 @@ public class CollisionDetection {
                 B = C;
             }
             // Now assuming f and g are in slope order
+            //  FIXME DEBUG 
+            System.out.println("\nSizes: " + A.getPointsNumber() + "," + B.getPointsNumber());
+            System.out.println("A: " + A.getPoints());
+            System.out.println("B: " + B.getPoints());
+            System.out.println("Median Points: f = " + A.getPoints().get(i) + "; b = " + B.getPoints().get(j));
             // Calculate the displacement of f in the chain D: (Al*Bl -> f -> g -> Ah*Bh)
             double f1X = A.getPoints().get(i).x + B.getPoints().get(j).x,
                     f1Y = A.getPoints().get(i).y + B.getPoints().get(j).y;
@@ -362,11 +399,12 @@ public class CollisionDetection {
             Segment segF = new Segment(f1X, f1Y, f2X, f2Y),
                     segG = new Segment(f2X, f2Y, g2X, g2Y);
 
-            System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
-            System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);
-            /*   gui.clearLines();
-             gui.addLine(lineF);
-             gui.addLine(lineG);*/
+            /* System.out.println("Xs: " + f1X + "," + f2X + "," + g2X);
+             System.out.println("Ys: " + f1Y + "," + f2Y + "," + g2Y);*/
+            Point2D.Double f1 = new Point2D.Double(f1X, f1Y),
+                    f2 = new Point2D.Double(f2X, f2Y),
+                    g2 = new Point2D.Double(g2X, g2Y);
+            System.out.println("f1: " + f1 + "\nf2 == g1: " + f2 + "\ng2: " + g2);
             /*
              ------------------------------------------------------------------
              Check where the intersection lies
@@ -384,21 +422,56 @@ public class CollisionDetection {
                  - testF is on f
                  - testF is below f
                  */
+
+                // FIXME show stuff F
+                // Show intersection
+                gui.clearLines();
+                gui.clearShapes();
+                gui.clearPoints();
+                gui.clearVectors();
+
+                gui.addPoint(new Point2D.Double(f1X, f1Y));
+                gui.addPoint(new Point2D.Double(f2X, f2Y));
+                gui.addPoint(new Point2D.Double(g2X, g2Y));
+                gui.addLine(lineF);
+                gui.addLine(d);
+                gui.addVector(w);
+                gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+
+                System.out.println("added points");
+                gui.repaint();
+                step(gui);
+
+                System.out.println("added intesection");
+                gui.addPoint(testF);
+                gui.repaint();
+                step(gui);
+
                 Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
                 System.out.println("posF: " + posF);
+                System.out.println("orient: " + orient + ", testF: " + testF + ", w: " + w);
                 if ((!d.isVertical() && ((orient && testF.x >= w.x) || (!orient && testF.x <= w.x)))
                         || (d.isVertical() && ((orient && testF.y >= w.y) || (!orient && testF.y <= w.y)))) {
                     // Intersection is valid
-                    if (posF == Segment.Position.COLLIDES) {
-                        // GOTCHA!
-                        Point2D.Double out = new Point2D.Double(Math.abs(testF.x - w.x), Math.abs(testF.y - w.y));
-                        System.out.println("GOTCHA! " + out);
-                        return out;
-                    } else if (posF == Segment.Position.COLLINEAR_BELOW) {
+                 /*   if (posF == Segment.Position.COLLIDES) {
+                     // GOTCHA!
+                     Point2D.Double out = new Point2D.Double(Math.abs(testF.x - w.x), Math.abs(testF.y - w.y));
+                     System.out.println("GOTCHA! " + out);
+                     return out;
+                     } else*/
+                    if (posF == Segment.Position.COLLIDES
+                            || posF == Segment.Position.COLLINEAR_BELOW) {
                         // Intersection below f: g and Bh can be removed
                         System.out.println("BELOW");
                         B = new Polygon(B.getPoints().subList(0, j + 1));
                         System.out.println("B shortened to " + B.getPointsNumber());
+                        continue;
+                    } else if (posF == Segment.Position.COLLINEAR_ABOVE) {
+                        // Intersection above f: f and Al can be removed
+                        System.out.println("ABOVE");
+                        // Drop Al and f
+                        A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
+                        System.out.println("A shortened to " + A.getPointsNumber());
                         continue;
                     }
                 } else {
@@ -413,22 +486,72 @@ public class CollisionDetection {
                  - testG is on g
                  - testG is above g
                  */
+
+                // FIXME show stuff G
+                System.out.println("show G");
+                gui.clearLines();
+                gui.clearVectors();
+                gui.clearShapes();
+                gui.clearPoints();
+
+                gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+                gui.addVector(w);
+                gui.addLine(d);
+                gui.repaint();
+
+                step(gui);
+
+                // Show intersection
+                gui.clearLines();
+                gui.clearShapes();
+                gui.clearPoints();
+                gui.clearVectors();
+
+                gui.addPoint(new Point2D.Double(f1X, f1Y));
+                gui.addPoint(new Point2D.Double(f2X, f2Y));
+                gui.addPoint(new Point2D.Double(g2X, g2Y));
+                gui.addShape(MinkowskiSum.minkowskiSumConvex(A, B));
+                gui.addLine(lineG);
+                gui.addLine(d);
+                gui.addVector(w);
+                gui.repaint();
+                System.out.println("added points");
+                step(gui);
+
+                gui.addPoint(testG);
+                System.out.println("added intesection");
+                gui.repaint();
+                step(gui);
+                gui.clearLines();
+                gui.clearShapes();
+                gui.clearPoints();
+                gui.clearVectors();
+
                 Segment.Position posG = (Segment.Position) segG.testAgainst(testG);
                 System.out.println("posG: " + posG);
+                System.out.println("orient: " + orient + ", testG: " + testG + ", w: " + w);
                 if ((!d.isVertical() && ((orient && testG.x >= w.x) || (!orient && testG.x <= w.x)))
                         || (d.isVertical() && ((orient && testG.y >= w.y) || (!orient && testG.y <= w.y)))) {
                     // Intersection is valid
-                    if (posG == Segment.Position.COLLIDES) {
-                        // GOTCHA!
-                        Point2D.Double out = new Point2D.Double(Math.abs(testG.x - w.x), Math.abs(testG.y - w.y));
-                        System.out.println("GOTCHA! " + out);
-                        return out;
-                    } else if (posG == Segment.Position.COLLINEAR_ABOVE) {
+                    /*if (posG == Segment.Position.COLLIDES) {
+                     // GOTCHA!
+                     Point2D.Double out = new Point2D.Double(Math.abs(testG.x - w.x), Math.abs(testG.y - w.y));
+                     System.out.println("GOTCHA! " + out);
+                     return out;
+                     } else*/
+                    if (posG == Segment.Position.COLLIDES
+                            || posG == Segment.Position.COLLINEAR_ABOVE) {
                         // Intersection above g: f and Al can be removed
                         System.out.println("ABOVE");
                         // Drop Al and f
                         A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
                         System.out.println("A shortened to " + A.getPointsNumber());
+                        continue;
+                    } else if (posG == Segment.Position.COLLINEAR_BELOW) {
+                        // Intersection below g: g and Bh can be removed
+                        System.out.println("BELOW");
+                        B = new Polygon(B.getPoints().subList(0, j + 1));
+                        System.out.println("B shortened to " + B.getPointsNumber());
                         continue;
                     }
                 } else {
@@ -453,15 +576,127 @@ public class CollisionDetection {
                 }
             }
 
-            //throw new RuntimeException("No valid intersection!");
             System.out.println("No valid intersection!");
-            return new Point2D.Double(0, 0);
-
+            // Remove f and g
+            A.getPoints().remove(i);
+            B.getPoints().remove(j);
+            // return new Point2D.Double(0, 0);
         }// End while loop
 
+        // One shadow is reduced to one vertex v, check the other one against w-v
+        if (A.getPointsNumber() == 1) {
+            w.setLocation(w.x - A.getPoints().get(0).x, w.y - A.getPoints().get(0).y);
+            A = B;
+        } else if (B.getPointsNumber() == 1) {
+            w.setLocation(w.x - B.getPoints().get(0).x, w.y - B.getPoints().get(0).y);
+        } else {
+            throw new RuntimeException("Impossible? Shadows not reduced to one vertex.");
+        }
+
+        gui.clearLines();
+        gui.clearShapes();
+        gui.clearPoints();
+        gui.clearVectors();
+
+        System.out.println("Done reducing.");
+        gui.addShape(A);
+        d.traslate(w);
+        gui.addLine(d);
+        gui.addVector(w);
+        gui.repaint();
+        gui.step();
+        try {
+            System.out.print("Sleeping... ");
+            Thread.sleep(3000);
+            System.out.println(" done.");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CollisionDetection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        gui.step();
+
+        // Binary search in the remaining shadow
+        int i;
+        System.out.println(">>>>> TRYING TO PLACE " + w);
+        // Make sure not to go out of bounds        
+        while (A.getPointsNumber() >= 2) {
+            System.out.println("size: " + A.getPointsNumber());
+            i = (A.getPointsNumber() - 1) / 2;
+            System.out.println("i: (" + A.getPointsNumber() + "-1) / 2 = " + i);
+            if (i == A.getPointsNumber() - 1) {
+                i--;
+                System.out.println("i decreased to " + i);
+            }
+            Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
+            Line l = new Line(e1, e2);
+            Segment e = new Segment(e1, e2);
+
+            // FIXME DEBUG
+            gui.clearLines();
+            gui.clearShapes();
+            gui.clearPoints();
+            gui.clearVectors();
+
+            System.out.println("Drawing binary search.");
+            gui.addPoint(e1);
+            gui.addPoint(e2);
+            gui.addLine(l);
+            gui.addLine(d);
+            gui.addVector(w);
+            gui.repaint();
+            gui.step();
+
+            Point2D.Double testE = l.testIntersection(d);
+            Segment.Position posE = (Segment.Position) e.testAgainst(testE);
+
+            System.out.println("placing " + w + " against " + l);
+            System.out.println("with points " + e1 + " - " + e2);
+            if ((!d.isVertical() && ((orient && testE.x >= w.x) || (!orient && testE.x <= w.x)))
+                    || (d.isVertical() && ((orient && testE.y >= w.y) || (!orient && testE.y <= w.y)))) {
+                if (posE == Segment.Position.COLLIDES) {
+                    Point2D.Double out = new Point2D.Double(testE.x - w.x, testE.y - w.y);
+                    System.out.println("GOTCHA! " + out);
+                    System.out.println("testE: " + testE + "; w: " + w);
+                    // FIXME DEBUG
+                    gui.clearLines();
+                    gui.clearShapes();
+                    gui.clearPoints();
+                    gui.clearVectors();
+                    gui.addVector(w);
+                    gui.addLine(d);
+                    gui.addLine(l);
+                    gui.addPoint(e1);
+                    gui.addPoint(e2);
+                    gui.addPoint(testE);
+                    gui.addVector(out);
+                    try {
+                        System.out.print("Sleeping... ");
+                        Thread.sleep(10000);
+                        System.out.println("done.");
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(CollisionDetection.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    gui.step();
+
+                    return out;
+                } else if (posE == Segment.Position.COLLINEAR_BELOW) {
+                    System.out.println("BELOW SHADOW");
+                    A = new Polygon(A.getPoints().subList(0, i));
+                    i = A.getPointsNumber() / 2;
+
+                } else if (posE == Segment.Position.COLLINEAR_ABOVE) {
+                    System.out.println("ABOVE SHADOW");
+                    A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
+                    i = A.getPointsNumber() / 2;
+                } else {
+                    System.err.println("Anomalous state: position = " + posE);
+                }
+            } else {
+                System.out.println("Intersection for e invalid.");
+            }
+        }
+
         // None of the above cases triggered
-        System.out.println("???2");
-        //throw new RuntimeException("???2");
+        System.out.println("No intersection: null penetration.");
         return new Point2D.Double(0, 0);
     }
 
