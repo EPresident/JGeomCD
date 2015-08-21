@@ -55,9 +55,17 @@ public class SegmentTest {
     public void testTestAgainst() {
         System.out.println(" --- testAgainst --- ");
 
-        Segment instance = new Segment(-1, -1, 1, 1);
+        /*
+         ---------------------------------------
+         Horizontal segment test
+         ---------------------------------------
+         */
+        System.out.println("------------------------------------------------\n"
+                + "     ---     Horizontal segment test     ---\n"
+                + "------------------------------------------------");
+        Segment instance = new Segment(-1, 0, 1, 0);
         Point2D.Double[] points = {new Point2D.Double(0, 1), new Point2D.Double(0, -1),
-            new Point2D.Double(1, 1), new Point2D.Double(2, 2), new Point2D.Double(-2, -2)};
+            new Point2D.Double(0, 0), new Point2D.Double(2, 0), new Point2D.Double(-2, 0)};
         Segment.Position[] expResults = {Segment.Position.LEFT, Segment.Position.RIGHT,
             Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
             Segment.Position.COLLINEAR_BELOW};
@@ -71,52 +79,118 @@ public class SegmentTest {
 
         {
             instance = new Segment(1, 0, -1, 0);
-            System.out.println("testing " + instance + " against point (2,0)");
-            Segment.Position result = (Segment.Position) instance.testAgainst(new Point2D.Double(2, 0));
-            System.out.println("Expected: c_b, result: "+result);
-            assertEquals(Segment.Position.COLLINEAR_BELOW, result);
+            points = new Point2D.Double[]{new Point2D.Double(0, -1), new Point2D.Double(0, 1),
+                new Point2D.Double(0, 0), new Point2D.Double(-2, 0), new Point2D.Double(2, 0)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
+        }
+
+        /*
+         ---------------------------------------
+         Vertical segment test
+         ---------------------------------------
+         */
+        System.out.println("------------------------------------------------\n"
+                + "     ---     Vertical segment test     ---\n"
+                + "------------------------------------------------");
+
+        {
+            instance = new Segment(0, -1, 0, 1);
+            points = new Point2D.Double[]{new Point2D.Double(-1, 0), new Point2D.Double(1, 0),
+                new Point2D.Double(0, 0), new Point2D.Double(0, 2), new Point2D.Double(0, -2)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
+        }
+
+        {
+            instance = new Segment(0, 1, 0, -1);
+            points = new Point2D.Double[]{new Point2D.Double(1, 0), new Point2D.Double(-1, 0),
+                new Point2D.Double(0, 0), new Point2D.Double(0, -2), new Point2D.Double(0, 2)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
+        }
+
+        /*
+         ---------------------------------------
+         Oblique segment test
+         ---------------------------------------
+         */
+        System.out.println("------------------------------------------------\n"
+                + "     ---     Oblique segment test     ---\n"
+                + "------------------------------------------------");
+
+        {
+            instance = new Segment(-1, -1, 1, 1);
+            points = new Point2D.Double[]{new Point2D.Double(0, 1), new Point2D.Double(0, -1),
+                new Point2D.Double(0, 0), new Point2D.Double(2, 2), new Point2D.Double(-2, -2)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
         }
         
-        instance = new Segment(-1, 0, 1, 0);
-        points = new Point2D.Double[]{new Point2D.Double(0, 1), new Point2D.Double(0, -1),
-            new Point2D.Double(-1, 0), new Point2D.Double(2, 0), new Point2D.Double(-2, 0)};
-        expResults = new Segment.Position[]{Segment.Position.LEFT, Segment.Position.RIGHT,
-            Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
-            Segment.Position.COLLINEAR_BELOW};
-        for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance);
-            System.out.println("point: " + points[i]);
-            Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
-            System.out.println("expected: " + expResults[i] + "; result: " + result);
-            assertEquals(expResults[i], result);
+        {
+            instance = new Segment(1, 1, -1, -1);
+            points = new Point2D.Double[]{new Point2D.Double(0, -1), new Point2D.Double(0, 1),
+                new Point2D.Double(0, 0), new Point2D.Double(-2, -2), new Point2D.Double(2, 2)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
         }
-
-        instance = new Segment(0, 1, 0, -1);
-        points = new Point2D.Double[]{new Point2D.Double(-1, 0), new Point2D.Double(1, 0),
-            new Point2D.Double(0, 0), new Point2D.Double(0, 2), new Point2D.Double(0, -2)};
-        expResults = new Segment.Position[]{Segment.Position.LEFT, Segment.Position.RIGHT,
-            Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
-            Segment.Position.COLLINEAR_BELOW};
-        for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance);
-            System.out.println("point: " + points[i]);
-            Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
-            System.out.println("expected: " + expResults[i] + "; result: " + result);
-            assertEquals(expResults[i], result);
+        
+        {
+            instance = new Segment(-1, 1, 1, -1);
+            points = new Point2D.Double[]{new Point2D.Double(0, 1), new Point2D.Double(0, -1),
+                new Point2D.Double(0, 0), new Point2D.Double(2, -2), new Point2D.Double(-2, 2)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
         }
-
-        instance = new Segment(1, -1, -1, 1);
-        points = new Point2D.Double[]{new Point2D.Double(0, -11), new Point2D.Double(0, 11),
-            new Point2D.Double(-1, 1), new Point2D.Double(2, -2), new Point2D.Double(-2, 2)};
-        expResults = new Segment.Position[]{Segment.Position.LEFT, Segment.Position.RIGHT,
-            Segment.Position.COLLIDES, Segment.Position.COLLINEAR_ABOVE,
-            Segment.Position.COLLINEAR_BELOW};
-        for (int i = 0; i < points.length; i++) {
-            System.out.println("\ni: " + i + " " + instance);
-            System.out.println("point: " + points[i]);
-            Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
-            System.out.println("expected: " + expResults[i] + "; result: " + result);
-            assertEquals(expResults[i], result);
+        
+        {
+            instance = new Segment(1, -1, -1, 1);
+            points = new Point2D.Double[]{new Point2D.Double(0, -1), new Point2D.Double(0, 1),
+                new Point2D.Double(0, 0), new Point2D.Double(-2, 2), new Point2D.Double(2, -2)};
+            // Same expResults
+            for (int i = 0; i < points.length; i++) {
+                System.out.println("\ni: " + i + " " + instance);
+                System.out.println("point: " + points[i]);
+                Segment.Position result = (Segment.Position) instance.testAgainst(points[i]);
+                System.out.println("expected: " + expResults[i] + "; result: " + result);
+                assertEquals(expResults[i], result);
+            }
         }
 
         // Tollerance test

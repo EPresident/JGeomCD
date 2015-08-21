@@ -412,10 +412,10 @@ public class CollisionDetection {
              */
             Point2D.Double testF = lineF.testIntersection(d),
                     testG = lineG.testIntersection(d);
+            Segment.Position posWF = (Segment.Position)segF.testAgainst(w),
+                    posWG = (Segment.Position)segF.testAgainst(w);
             // testIntersection() returns a Point or null
-
-            // Got at least one intersection
-            if (testF != null) {
+            if (testF != null && posWF != Segment.Position.RIGHT) {
                 /*
                  Check the position of the intersection point relative to edge f
                  Interesting cases:
@@ -479,7 +479,7 @@ public class CollisionDetection {
                     System.out.println("Intersection for f invalid.");
                 }
             }
-            if (testG != null) {
+            if (testG != null && posWF != Segment.Position.RIGHT) {
                 /*
                  Check the position of the intersection point relative to edge g
                  Interesting cases:
@@ -605,13 +605,13 @@ public class CollisionDetection {
         gui.addVector(w);
         gui.repaint();
         gui.step();
-        try {
+      /*  try {
             System.out.print("Sleeping... ");
             Thread.sleep(3000);
             System.out.println(" done.");
         } catch (InterruptedException ex) {
             Logger.getLogger(CollisionDetection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         gui.step();
 
         // Binary search in the remaining shadow
@@ -668,13 +668,13 @@ public class CollisionDetection {
                     gui.addPoint(e2);
                     gui.addPoint(testE);
                     gui.addVector(out);
-                    try {
+                   /* try {
                         System.out.print("Sleeping... ");
                         Thread.sleep(10000);
                         System.out.println("done.");
                     } catch (InterruptedException ex) {
                         Logger.getLogger(CollisionDetection.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    }*/
                     gui.step();
 
                     return out;

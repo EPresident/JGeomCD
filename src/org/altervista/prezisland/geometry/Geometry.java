@@ -88,7 +88,7 @@ public final class Geometry {
      *
      * @param p1
      * @param p2
-     * @return < 0 if p1<p2, 0 if p1==p2, > 0 else
+     * @return less than 0 if p1 less than p2, 0 if p1==p2, more than 0 else
      */
     public static int compareLexicographicallyX(Point2D.Double p1, Point2D.Double p2) {
         if (p1.x < p2.x) {
