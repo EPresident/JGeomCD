@@ -183,42 +183,6 @@ public class Segment extends Line {
                     return direction ? Position.COLLINEAR_ABOVE : Position.COLLINEAR_BELOW;
                 }
             }
-            /*  if (slope < 0) {
-             if (p.y > slope * p.x + yIntercept + TOLLERANCE) {
-             return direction ? Position.LEFT : Position.RIGHT;
-             } else if (p.y < slope * p.x + yIntercept - TOLLERANCE) {
-             return direction ? Position.RIGHT : Position.LEFT;
-             } else {
-             // Point is collinear
-             if (p.y >= p2.y - TOLLERANCE && p.y <= p1.y + TOLLERANCE
-             && p.x >= p1.x - TOLLERANCE && p.x <= p2.x + TOLLERANCE) {
-             return Position.COLLIDES;
-             } else if (p.y > p1.y - TOLLERANCE && p.x < p1.x + TOLLERANCE) {
-             return Position.COLLINEAR_ABOVE;
-             } else {
-             // p.y < p2.y && p.x > p2.x
-             return Position.COLLINEAR_BELOW;
-             }
-             }
-             } else {
-             // Slope > 0
-             if (p.y < slope * p.x + yIntercept - TOLLERANCE) {
-             return Position.RIGHT;
-             } else if (p.y > slope * p.x + yIntercept + TOLLERANCE) {
-             return Position.LEFT;
-             } else {
-             // Point is collinear
-             if (p.y >= p1.y - TOLLERANCE && p.y <= p2.y + TOLLERANCE
-             && p.x >= p1.x - TOLLERANCE && p.x <= p2.x + TOLLERANCE) {
-             return Position.COLLIDES;
-             } else if (p.y < p1.y + TOLLERANCE && p.x < p1.x + TOLLERANCE) {
-             return Position.COLLINEAR_BELOW;
-             } else {
-             // p.y > p2.y && p.x > p2.x
-             return Position.COLLINEAR_ABOVE;
-             }
-             }
-             }*/
         }
     }
 
@@ -235,21 +199,44 @@ public class Segment extends Line {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    /**
+     * Given the y coordinate, calculate the relative x coordinate for this
+     * line.
+     *
+     * @param y Position on the y axis
+     * @return Position on the x axis
+     */
     @Override
     public double calculateX(double y) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    /**
+     * Given the x coordinate, calculate the relative y coordinate for this
+     * line.
+     *
+     * @param x Position on the x axis
+     * @return Position on the y axis
+     */
     @Override
     public double calculateY(double x) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    /**
+     * Check if a line intersects this segment. Point intersections supported only.
+     * @param l Test line
+     * @return Point of intersection (a witness in the intersection is big)
+     */
     @Override
     public Point2D.Double testIntersection(Line l) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    /**
+     * Return the line passing through this segment
+     * @return 
+     */
     public Line asLine() {
         return new Line(p1, p2);
     }

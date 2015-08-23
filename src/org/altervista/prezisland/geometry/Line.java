@@ -97,6 +97,13 @@ public class Line {
         }
     }
 
+    /**
+     * Return the position of a point relative to this line. A set tollerance is
+     * employed to minimize approximation errors.
+     *
+     * @param p Point to test
+     * @return Relative position as a Line.Position enum.
+     */
     public RelativePosition testAgainst(Point2D.Double p) {
         if (a == 0) {
             // Horizontal line
@@ -142,6 +149,12 @@ public class Line {
         }
     }
 
+    /**
+     * Compute the point of intersection between two lines. Line intersection
+     * are not supported, a witness point is returned instead.
+     * @param l Line to test against
+     * @return A witness point to the intersection
+     */
     public Point2D.Double testIntersection(Line l) {
         if (l.isVertical()) {
             if (this.isVertical()) {
@@ -213,10 +226,23 @@ public class Line {
         return null;
     }
 
+    /**
+     * Check in this Line includes a Point  
+     * @param p Point to check  
+     * @return True if the point is on the line, false otherwise.
+     */
     public boolean contains(Point2D.Double p) {
         return testAgainst(p) == Position.COLLIDES;
     }
 
+    /**
+     * Shifts a given point a set distance along this line.
+     * For example, if point (0,1) is shifted 30px along line y = 1, the resulting
+     * point is (30,1).
+     * @param p Point to be shifted, must be collinear with the line.
+     * @param distance How far to shift the point (in pixels)
+     * @return The shifted point.
+     */
     public Point2D.Double shiftAlongLine(Point2D.Double p, double distance) {
         if (!contains(p)) {
             return null;
@@ -235,6 +261,13 @@ public class Line {
 
     }
 
+    /**
+     * Given the x coordinate, calculate the relative y coordinate for this
+     * line.
+     *
+     * @param x Position on the x axis
+     * @return Position on the y axis
+     */
     public double calculateY(double x) {
         if (a != 0 && b != 0) {
             // Oblique line
@@ -246,6 +279,13 @@ public class Line {
         throw new RuntimeException("Cannot calculate Y of a vertical line!");
     }
 
+    /**
+     * Given the y coordinate, calculate the relative x coordinate for this
+     * line.
+     *
+     * @param y Position on the y axis
+     * @return Position on the x axis
+     */
     public double calculateX(double y) {
         if (a != 0 && b != 0) {
             return (-b / a) * y + (-c / a);
@@ -256,9 +296,10 @@ public class Line {
     }
 
     /**
-     * Test pending!
+     * Traslate this line so that is passes through a given point. The rotation
+     * (i.e. slope) is preserved.
      *
-     * @param p
+     * @param p Point the line must pass through.
      */
     public void traslate(Point2D p) {
         if (isVertical()) {
