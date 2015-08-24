@@ -697,6 +697,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
                             clearPoints();
                             popStack();
                             addVector(ret);
+                            repaint();
                             while (!step()) {
                                 Thread.sleep(200);
                             }
@@ -718,23 +719,6 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
                     };
 
                     worker.execute();
-
-                    //   Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, direction, dirOrientation, this);
-                    //    System.out.println("\n\nPenetration vector: " + vect);
-                    // Resolve the collision
-                   /* Point2D.Double base = p1.getPoints().get(0);
-                     direction.traslate(base);
-                     double length = 
-                     CollisionDetection.getPenetrationDepth(
-                     p1, p2, direction, dirOrientation, this);
-                     System.out.println("Penetration depth: " + length);
-                     Point2D.Double shift = direction.shiftAlongLine(base, length);
-                     System.out.println("Shift: " + shift);
-                     if (dirOrientation) {
-                     p1.traslate(-shift.x + base.x, -shift.y + base.y);
-                     } else {
-                     p1.traslate(shift.x - base.x, shift.y - base.y);
-                     }*/
                 } else {
                     System.err.println("At least one polygon is not convex.");
                 }
