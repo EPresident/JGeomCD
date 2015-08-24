@@ -28,7 +28,6 @@ import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -38,11 +37,11 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 
 /**
+ * Graphical User Interface to visualize the execution of geometric algorithms.
  *
  * @author EPresident <prez_enquiry@hotmail.com>
  */
@@ -95,48 +94,51 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
 
     @Override
     public void paint(Graphics g) {
-        /*System.out.println("window size: " + getWidth() + "," + getHeight());
-         System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());*/
-        origin.setLocation(drawPanel.getLocation().getX() + ORIGIN_X_OFFSET,
-                drawPanel.getHeight() - ORIGIN_Y_OFFSET);
-        // System.out.println("origin: " + origin);
-        g.clearRect(0, 0, this.getWidth(), getHeight());
-        this.paintComponents(g);
-        drawGrid(drawPanel.getGraphics());
-        for (Line l : lines) {
-            drawLine(l, drawPanel.getGraphics());
+        synchronized (this) {
+            /*System.out.println("window size: " + getWidth() + "," + getHeight());
+             System.out.println("dpanel size: " + drawPanel.getWidth() + "," + drawPanel.getHeight());*/
+            origin.setLocation(drawPanel.getLocation().getX() + ORIGIN_X_OFFSET,
+                    drawPanel.getHeight() - ORIGIN_Y_OFFSET);
+            // System.out.println("origin: " + origin);
+            g.clearRect(0, 0, this.getWidth(), getHeight());
+            this.paintComponents(g);
+            drawGrid(drawPanel.getGraphics());
+            for (Line l : lines) {
+                drawLine(l, drawPanel.getGraphics());
+            }
+            if (direction != null && !stepMode) {
+                drawLine(direction, drawPanel.getGraphics());
+            }
+            for (Polygon s : shapes) {
+                drawShape(s, drawPanel.getGraphics());
+            }
+            for (Point2D.Double p : vectors) {
+                drawVector(drawPanel.getGraphics(), (int) p.x, (int) p.y);
+            }
+            for (Point2D.Double p : points) {
+                drawPoint(p, drawPanel.getGraphics());
+            }
+            for (Point2D.Double p : pointBuffer) {
+                drawPoint(p, drawPanel.getGraphics());
+            }
+            drawOrigin();
         }
-        if (direction != null && !stepMode) {
-            drawLine(direction, drawPanel.getGraphics());
-        }
-        for (Polygon s : shapes) {
-            drawShape(s, drawPanel.getGraphics());
-        }
-        for (Point2D.Double p : vectors) {
-            drawVector(drawPanel.getGraphics(), (int) p.x, (int) p.y);
-        }
-        for (Point2D.Double p : points) {
-            drawPoint(p, drawPanel.getGraphics());
-        }
-        for (Point2D.Double p : pointBuffer) {
-            drawPoint(p, drawPanel.getGraphics());
-        }
-        drawOrigin();
+
     }
 
-    public void addShape(Polygon s) {
+    public synchronized void addShape(Polygon s) {
         shapes.add(s);
     }
 
-    public void addPoint(Point2D.Double p) {
+    public synchronized void addPoint(Point2D.Double p) {
         points.add(p);
     }
 
-    public void addVector(Point2D.Double p) {
+    public synchronized void addVector(Point2D.Double p) {
         vectors.add(p);
     }
 
-    public void addLine(Line l) {
+    public synchronized void addLine(Line l) {
         lines.add(l);
     }
 
@@ -145,28 +147,28 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
         shapes.clear();
     }
 
-    public void popStack() {
+    public synchronized void popStack() {
         shapes.clear();
         shapes.addAll(shapeStack.pop());
     }
 
-    public void clearPoints() {
+    public synchronized void clearPoints() {
         points.clear();
     }
 
-    public void clearLines() {
+    public synchronized void clearLines() {
         lines.clear();
     }
 
-    public void clearVectors() {
+    public synchronized void clearVectors() {
         vectors.clear();
     }
 
-    public void clearShapes() {
+    public synchronized void clearShapes() {
         shapes.clear();
     }
 
-    public void clearAll() {
+    public synchronized void clearAll() {
         shapes.clear();
         points.clear();
         vectors.clear();
@@ -461,7 +463,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
     public synchronized boolean step() {
         //   if (stepMode) {
         if (stepAvailable) {
-            stepAvailable = false;           
+            stepAvailable = false;
             return true;
         }
         //}
@@ -685,8 +687,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
                             direction.traslate(base);
                             double length
                                     = /*CollisionDetection.getPenetrationDepth(
-                                            p1, p2, direction, dirOrientation, gui)*/ 
-                                    Math.sqrt(Math.pow(ret.x, 2)+Math.pow(ret.y, 2));
+                                     p1, p2, direction, dirOrientation, gui)*/ Math.sqrt(Math.pow(ret.x, 2) + Math.pow(ret.y, 2));
                             System.out.println("Pen vect: " + ret + "; length: " + (Math.sqrt(Math.pow(ret.x, 2) + Math.pow(ret.y, 2))));
                             System.out.println("Penetration depth: " + length);
                             Point2D.Double shift = direction.shiftAlongLine(base, length);
@@ -696,7 +697,7 @@ public class GeomGUI extends javax.swing.JFrame implements MouseListener {
                             clearPoints();
                             popStack();
                             addVector(ret);
-                            while(!step()){
+                            while (!step()) {
                                 Thread.sleep(200);
                             }
                             clearVectors();
