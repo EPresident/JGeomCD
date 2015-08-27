@@ -181,24 +181,34 @@ public class CollisionDetection {
             Point2D.Double testF = lineF.testIntersection(d),
                     testG = lineG.testIntersection(d);
             Segment.Position posWF = (Segment.Position) segF.testAgainst(w),
-                    posWG = (Segment.Position) segF.testAgainst(w);
+                    posWG = (Segment.Position) segG.testAgainst(w);
             // testIntersection() returns a Point or null
-            if (testF != null && posWF != Segment.Position.RIGHT) {
+            if (testF != null) {
                 /*
                  Check the position of the intersection point relative to edge f
                  Interesting cases:
                  - testF is on f
                  - testF is below f
                  */
-
                 Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
-                if ((!d.isVertical() && ((orient && testF.x >= w.x) || (!orient && testF.x <= w.x)))
-                        || (d.isVertical() && ((orient && testF.y >= w.y) || (!orient && testF.y <= w.y)))) {
+                boolean intersectionValid = true;
+                if (testF.x < w.x || posWF == Segment.Position.RIGHT) {
+                    intersectionValid = false;
+                }
+                if ((d.isVertical() || (d.isOblique() && d.getSlope() > 0))
+                        && testF.y < w.y) {
+                    intersectionValid = false;
+                }
+                if (d.isOblique() && d.getSlope() < 0 && testF.y > w.y) {
+                    intersectionValid = false;
+                }
+
+                if (intersectionValid) {
                     // Intersection is valid
                     if (posF == Segment.Position.COLLIDES
                             || posF == Segment.Position.COLLINEAR_BELOW) {
-                        // Intersection below f: g and Bh can be removed
-                        B = new Polygon(B.getPoints().subList(0, j + 1));
+                        // Intersection below f: g and Bh can be removed                       
+                        B = new Polygon(B.getPoints().subList(0, j + 1));                       
                         continue;
                     } else if (posF == Segment.Position.COLLINEAR_ABOVE) {
                         // Intersection above f: f and Al can be removed
@@ -210,17 +220,28 @@ public class CollisionDetection {
                     // Intersection generated from the line, not the ray: discard it.
                 }
             }
-            if (testG != null && posWF != Segment.Position.RIGHT) {
+            if (testG != null) {
                 /*
                  Check the position of the intersection point relative to edge g
                  Interesting cases:
                  - testG is on g
                  - testG is above g
                  */
-
                 Segment.Position posG = (Segment.Position) segG.testAgainst(testG);
-                if ((!d.isVertical() && ((orient && testG.x >= w.x) || (!orient && testG.x <= w.x)))
-                        || (d.isVertical() && ((orient && testG.y >= w.y) || (!orient && testG.y <= w.y)))) {
+                boolean intersectionValid = true;
+                if (testG.x < w.x || posWG == Segment.Position.RIGHT) {
+                    intersectionValid = false;
+                }
+                if ((d.isVertical() || (d.isOblique() && d.getSlope() > 0))
+                        && testG.y < w.y) {
+                    intersectionValid = false;
+                }
+                if (d.isOblique() && d.getSlope() < 0 && testG.y > w.y) {
+                    intersectionValid = false;
+                }
+
+                if (intersectionValid) {
+                    // Intersection is valid
                     if (posG == Segment.Position.COLLIDES
                             || posG == Segment.Position.COLLINEAR_ABOVE) {
                         // Intersection above g: f and Al can be removed
@@ -244,14 +265,18 @@ public class CollisionDetection {
                     A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
                     continue;
                 } else {
-                    // Drop Bh and g
                     B = new Polygon(B.getPoints().subList(0, j + 1));
                     continue;
                 }
             } else if (d.isHorizontal()) {
-                // Drop Bh and g
-                B = new Polygon(B.getPoints().subList(0, j + 1));
-                continue;
+                if (d.calculateY(0) > f1.y) {
+                    A = new Polygon(A.getPoints().subList(i + 1, A.getPoints().size()));
+                    continue;
+                } else {
+                    // Drop Bh and g
+                    B = new Polygon(B.getPoints().subList(0, j + 1));
+                    continue;
+                }
             } else {
                 // d is oblique
                 if (d.getSlope() > 0) {
@@ -265,9 +290,6 @@ public class CollisionDetection {
                 }
             }
 
-            // Remove f and g
-            /*A.getPoints().remove(i);
-             B.getPoints().remove(j);*/
         }// End while loop
 
         // One shadow is reduced to one vertex v, check the other one against w-v
@@ -279,6 +301,7 @@ public class CollisionDetection {
         } else {
             throw new RuntimeException("Impossible? Shadows not reduced to one vertex.");
         }
+        d.traslate(w);
 
         // Binary search in the remaining shadow
         int i;
@@ -291,12 +314,22 @@ public class CollisionDetection {
             Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
             Line l = new Line(e1, e2);
             Segment e = new Segment(e1, e2);
-
             Point2D.Double testE = l.testIntersection(d);
-            Segment.Position posE = (Segment.Position) e.testAgainst(testE);
+            Segment.Position posE = (Segment.Position) e.testAgainst(testE),
+                    posWE = (Segment.Position) e.testAgainst(w);
 
-            if ((!d.isVertical() && ((orient && testE.x >= w.x) || (!orient && testE.x <= w.x)))
-                    || (d.isVertical() && ((orient && testE.y >= w.y) || (!orient && testE.y <= w.y)))) {
+            boolean intersectionValid = true;
+            if (testE.x < w.x || posWE == Segment.Position.RIGHT) {
+                intersectionValid = false;
+            }
+            if ((d.isVertical() || (d.isOblique() && d.getSlope() > 0))
+                    && testE.y < w.y) {
+                intersectionValid = false;
+            }
+            if (d.isOblique() && d.getSlope() < 0 && testE.y > w.y) {
+                intersectionValid = false;
+            }
+            if (intersectionValid) {
                 if (posE == Segment.Position.COLLIDES) {
                     Point2D.Double out = new Point2D.Double(testE.x - w.x, testE.y - w.y);
                     return out;
@@ -310,7 +343,35 @@ public class CollisionDetection {
                     System.err.println("Anomalous state: position = " + posE);
                 }
             } else {
-                // Intersection for e invalid
+                if (d.isVertical()) {
+                    if (orient) {
+                        A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
+                        i = A.getPointsNumber() / 2;
+                    } else {
+                        A = new Polygon(A.getPoints().subList(0, i));
+                        i = A.getPointsNumber() / 2;
+                    }
+                } else if (d.isHorizontal()) {
+                    if (d.calculateY(0) > e1.y) {
+                        A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
+                        i = A.getPointsNumber() / 2;
+                    } else {
+                        // Drop Bh and g
+                        A = new Polygon(A.getPoints().subList(0, i));
+                        i = A.getPointsNumber() / 2;
+                    }
+                } else {
+                    // d is oblique
+                    if (d.getSlope() > 0) {
+                        // Drop Al and f
+                        A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
+                        i = A.getPointsNumber() / 2;
+                    } else {
+                        // Drop Bh and g
+                        A = new Polygon(A.getPoints().subList(0, i));
+                        i = A.getPointsNumber() / 2;
+                    }
+                }
             }
         }
 
