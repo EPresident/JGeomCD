@@ -26,7 +26,6 @@ package org.altervista.prezisland.geometry;
 import org.altervista.prezisland.geometry.shapes.Polygon;
 import java.awt.geom.Point2D;
 import java.util.List;
-import org.altervista.prezisland.geometry.algorithms.CollisionDetection;
 
 /**
  *
@@ -59,24 +58,10 @@ public final class Geometry {
         gui = new GeomGUI();
         gui.setVisible(true);
 
-
-
-       /* Line dir = DIR_BISECT;
-        boolean or = true;
-        double result = CollisionDetection.getPenetrationDepth(
-                p1, p2, dir, or);
-        Point2D.Double vect = CollisionDetection.getPenetrationVector(p1, p2, dir, or);
-        System.out.println("Result: " + result + " " + vect);
-        Point2D.Double base = p1.getPoints().get(0);
-        dir.traslate(base);
-        Point2D.Double shift = dir.shiftAlongLine(base, result);
-        if (or) {
-            p1.traslate(-shift.x + base.x, -shift.y + base.y);
-        } else {
-            p1.traslate(shift.x - base.x, shift.y - base.y);
-
-        }
-        gui.repaint();*/
+        Polygon p1 =new Polygon(new Point2D.Double[]{new Point2D.Double(10, 10),
+        new Point2D.Double(60, 10),new Point2D.Double(60, 60),new Point2D.Double(10, 60)}),
+                p2 = new Polygon(new Point2D.Double[]{new Point2D.Double(70, 20),
+        new Point2D.Double(100, 20),new Point2D.Double(100, 60)});
     }
 
     public static void main(String[] args) {

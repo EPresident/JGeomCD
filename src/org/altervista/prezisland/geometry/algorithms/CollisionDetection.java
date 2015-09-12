@@ -186,9 +186,6 @@ public class CollisionDetection {
             if (testF != null) {
                 /*
                  Check the position of the intersection point relative to edge f
-                 Interesting cases:
-                 - testF is on f
-                 - testF is below f
                  */
                 Segment.Position posF = (Segment.Position) segF.testAgainst(testF);
                 boolean intersectionValid = true;
@@ -207,8 +204,8 @@ public class CollisionDetection {
                     // Intersection is valid
                     if (posF == Segment.Position.COLLIDES
                             || posF == Segment.Position.COLLINEAR_BELOW) {
-                        // Intersection below f: g and Bh can be removed                       
-                        B = new Polygon(B.getPoints().subList(0, j + 1));                       
+                        // Intersection below f: g and Bh can be removed
+                        B = new Polygon(B.getPoints().subList(0, j + 1));
                         continue;
                     } else if (posF == Segment.Position.COLLINEAR_ABOVE) {
                         // Intersection above f: f and Al can be removed
@@ -223,9 +220,6 @@ public class CollisionDetection {
             if (testG != null) {
                 /*
                  Check the position of the intersection point relative to edge g
-                 Interesting cases:
-                 - testG is on g
-                 - testG is above g
                  */
                 Segment.Position posG = (Segment.Position) segG.testAgainst(testG);
                 boolean intersectionValid = true;
@@ -259,6 +253,7 @@ public class CollisionDetection {
             }
 
             // No valid intersection
+            // Use information on d to choose what to drop
             if (d.isVertical()) {
                 if (orient) {
                     // Drop Al and f
@@ -314,6 +309,7 @@ public class CollisionDetection {
             Point2D.Double e1 = A.getPoints().get(i), e2 = A.getPoints().get(i + 1);
             Line l = new Line(e1, e2);
             Segment e = new Segment(e1, e2);
+
             Point2D.Double testE = l.testIntersection(d);
             Segment.Position posE = (Segment.Position) e.testAgainst(testE),
                     posWE = (Segment.Position) e.testAgainst(w);
@@ -343,6 +339,8 @@ public class CollisionDetection {
                     System.err.println("Anomalous state: position = " + posE);
                 }
             } else {
+                // Intersection for e invalid.
+                // Use info on d to choose what to drop
                 if (d.isVertical()) {
                     if (orient) {
                         A = new Polygon(A.getPoints().subList(i, A.getPointsNumber() - 1));
@@ -376,6 +374,7 @@ public class CollisionDetection {
         }
 
         // None of the above cases triggered
+        // No intersection: null penetration.
         return new Point2D.Double(0, 0);
     }
 

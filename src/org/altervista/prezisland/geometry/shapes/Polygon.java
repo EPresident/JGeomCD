@@ -27,8 +27,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import org.altervista.prezisland.geometry.CartesianVector;
 import org.altervista.prezisland.geometry.Geometry;
 
 /**
@@ -41,7 +39,6 @@ public class Polygon {
 
     protected final ArrayList<Point2D.Double> points;
     protected final Point2D.Double center;
-    protected CartesianVector[] separatingAxes;
 
     public Polygon(Point2D.Double[] pts) {
         points = new ArrayList<>();
@@ -162,25 +159,6 @@ public class Polygon {
         return points.size();
     }
 
-    /**
-     * Calculate the separating axes for this shape, <i>if</i> they aren't
-     * defined yet.
-     *
-     * @return An Array of separating (unit) axes for this shape, i.e. the axes
-     * perpendicular to each edge.
-     */
-    public CartesianVector[] getSeparatingAxes() {
-        if (separatingAxes == null) {
-            separatingAxes = new CartesianVector[points.size() - 1];
-            // Get direction vector for each edge
-            for (int i = 0; i < points.size() - 1; i++) {
-                Point2D p1 = points.get(i), p2 = points.get(i + 1);
-                separatingAxes[i] = new CartesianVector(p1, p2).getRighthandNormal().makeUnit();
-            }
-        }
-        return separatingAxes;
-    }
-
     public double getDistance(Polygon s) {
         return this.center.distance(s.center);
     }
@@ -209,20 +187,7 @@ public class Polygon {
         throw new UnsupportedOperationException("NYI");
     }
 
-    public AABB getBoundingRectangle() {
-        throw new UnsupportedOperationException("NYI");
-    }
-
-    public CartesianVector[] getEdges() {
-        CartesianVector[] edges = new CartesianVector[points.size() - 1];
-        for (int i = 0; i < edges.length; i++) {
-            edges[i] = new CartesianVector(points.get(i).x, points.get(i).y,
-                    points.get(i + 1).x, points.get(i + 1).y);
-        }
-        return edges;
-    }
-
-    public boolean isConvex() {
+    public boolean isConvex() { // Test pending, seems wrong in some cases
         for (int i = 1; i < points.size() - 1; i++) {
             if (!Geometry.isLeftTurn(points.get(i - 1), points.get(i), points.get(i + 1))) {
                 return false;
